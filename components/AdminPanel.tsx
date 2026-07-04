@@ -1,12 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { X, Lock, KeyRound, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useSite, SiteSettings } from '@/context/SiteContext';
-import { contentSchema } from '@/lib/contentSchema';
+import { contentSchema, getContentDefault } from '@/lib/contentSchema';
 
 interface AdminPanelProps {
   onClose: () => void;
 }
+
+// Default values for top-level settings fields
+const TOP_LEVEL_DEFAULTS: Record<string, string> = {
+  brand_name: 'Grave Care Kashmir',
+  whatsapp_number: '917006830501',
+  whatsapp_message: '',
+  instagram_profile_url: '',
+  facebook_profile_url: '',
+  hero_title: "Your Family's Resting Place, Maintained with Dignity.",
+  hero_subtitle: 'We clean, align, and restore graves for families who want to keep resting places in proper condition. Our work spans across Srinagar and local qabristans.',
+  cta_title: 'Let us care for their resting place.',
+  cta_text: 'Send us a message. We will listen to your wishes and carefully coordinate every detail to bring you comfort.',
+};
 
 export default function AdminPanel({ onClose }: AdminPanelProps) {
   const { settings, workMedia, refreshSettings } = useSite();
@@ -20,7 +33,9 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
   const [pin, setPin] = useState('');
   const [authError, setAuthError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [session, setSession] = useState<any>(null);
+  const [hasChanges, setHasChanges] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState<Partial<SiteSettings>>({});
@@ -32,6 +47,16 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
   const [newMediaCaption, setNewMediaCaption] = useState('');
   const [isMediaSaving, setIsMediaSaving] = useState(false);
 
+  // Security State (Change PIN)
+  const [currentPin, setCurrentPin] = useState('');
+  const [newPin, setNewPin] = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
+  const [pinChangeError, setPinChangeError] = useState('');
+  const [pinChangeSuccess, setPinChangeSuccess] = useState('');
+  const [isChangingPin, setIsChangingPin] = useState(false);
+  const [showCurrentPin, setShowCurrentPin] = useState(false);
+  const [showNewPin, setShowNewPin] = useState(false);
+
   useEffect(() => {
     // Check active session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -42,20 +67,44 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
     });
 
     if (settings) {
+      // Pre-populate form with actual values from DB, falling back to defaults
       setFormData({
-        brand_name: settings.brand_name,
-        whatsapp_number: settings.whatsapp_number,
-        whatsapp_message: settings.whatsapp_message,
-        instagram_profile_url: settings.instagram_profile_url,
-        facebook_profile_url: settings.facebook_profile_url,
-        hero_title: settings.hero_title,
-        hero_subtitle: settings.hero_subtitle,
-        cta_title: settings.cta_title,
-        cta_text: settings.cta_text,
+        brand_name: settings.brand_name || TOP_LEVEL_DEFAULTS.brand_name,
+        whatsapp_number: settings.whatsapp_number || TOP_LEVEL_DEFAULTS.whatsapp_number,
+        whatsapp_message: settings.whatsapp_message ?? '',
+        instagram_profile_url: settings.instagram_profile_url || '',
+        facebook_profile_url: settings.facebook_profile_url || '',
+        hero_title: settings.hero_title || TOP_LEVEL_DEFAULTS.hero_title,
+        hero_subtitle: settings.hero_subtitle || TOP_LEVEL_DEFAULTS.hero_subtitle,
+        cta_title: settings.cta_title || TOP_LEVEL_DEFAULTS.cta_title,
+        cta_text: settings.cta_text || TOP_LEVEL_DEFAULTS.cta_text,
       });
-      setContentData(settings.content_json || {});
+
+      // Pre-populate content_json with actual values, filling empty ones with schema defaults
+      const existingContent = settings.content_json || {};
+      const populatedContent: Record<string, string> = {};
+      
+      for (const group of contentSchema) {
+        for (const field of group.fields) {
+          // Use existing DB value if set, otherwise use schema default
+          populatedContent[field.key] = existingContent[field.key] || field.defaultValue || '';
+        }
+      }
+      
+      setContentData(populatedContent);
     }
   }, [settings]);
+
+  // Track changes
+  const updateFormData = useCallback((updates: Partial<SiteSettings>) => {
+    setFormData(prev => ({ ...prev, ...updates }));
+    setHasChanges(true);
+  }, []);
+
+  const updateContentData = useCallback((key: string, value: string) => {
+    setContentData(prev => ({ ...prev, [key]: value }));
+    setHasChanges(true);
+  }, []);
 
   const handleSupabaseLogin = async () => {
     setAuthError('');
@@ -85,19 +134,33 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
     }
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+  const handleClose = async () => {
+    // Auto-lock: sign out and reset state on close
+    try {
+      await supabase.auth.signOut();
+    } catch (_) {
+      // Ignore errors during signout
+    }
     setSession(null);
     setIsUnlocked(false);
+    setEmail('');
+    setPassword('');
+    setPin('');
+    setAuthError('');
+    setHasChanges(false);
+    setSaveMessage(null);
+    onClose();
   };
 
   const handleSave = async () => {
     if (!session) {
-      alert("You are logged in via Recovery PIN. Database writes require full Admin Login (Email/Password) due to security policies.");
+      setSaveMessage({ type: 'error', text: 'You are in Read-Only mode (Recovery PIN). Full Admin Login (Email/Password) is required to save changes.' });
       return;
     }
 
     setIsSaving(true);
+    setSaveMessage(null);
+    
     const { error } = await supabase
       .from('site_settings')
       .update({
@@ -108,21 +171,25 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
       .eq('id', 'main');
 
     if (error) {
-      alert('Error saving settings: ' + error.message);
+      setSaveMessage({ type: 'error', text: 'Error saving: ' + error.message });
     } else {
-      alert('Settings saved successfully!');
+      setSaveMessage({ type: 'success', text: 'Settings saved successfully! Changes are now live.' });
+      setHasChanges(false);
       await refreshSettings();
     }
     setIsSaving(false);
+    
+    // Auto-clear success message after 4 seconds
+    setTimeout(() => setSaveMessage(null), 4000);
   };
 
   const handleAddMedia = async () => {
     if (!session) {
-      alert("Database writes require full Admin Login.");
+      setSaveMessage({ type: 'error', text: 'Database writes require full Admin Login.' });
       return;
     }
     if (!newMediaUrl) {
-      alert("Please provide an image/video URL");
+      setSaveMessage({ type: 'error', text: 'Please provide an image/video URL.' });
       return;
     }
 
@@ -133,16 +200,18 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
         file_url: newMediaUrl,
         storage_path: newMediaThumbnail || null,
         caption: newMediaCaption,
-        file_type: newMediaUrl.includes('.mp4') ? 'video' : 'image', // Basic inference
+        file_type: newMediaUrl.includes('.mp4') ? 'video' : 'image',
       }]);
 
     if (error) {
-      alert('Error adding media: ' + error.message);
+      setSaveMessage({ type: 'error', text: 'Error adding media: ' + error.message });
     } else {
       setNewMediaUrl('');
       setNewMediaThumbnail('');
       setNewMediaCaption('');
       await refreshSettings();
+      setSaveMessage({ type: 'success', text: 'Media added successfully!' });
+      setTimeout(() => setSaveMessage(null), 3000);
     }
     setIsMediaSaving(false);
   };
@@ -157,10 +226,67 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
       .eq('id', id);
 
     if (error) {
-      alert('Error deleting media: ' + error.message);
+      setSaveMessage({ type: 'error', text: 'Error deleting media: ' + error.message });
     } else {
       await refreshSettings();
     }
+  };
+
+  const handleChangePin = async () => {
+    setPinChangeError('');
+    setPinChangeSuccess('');
+
+    if (!session) {
+      setPinChangeError('Full Admin Login is required to change the Recovery PIN.');
+      return;
+    }
+    if (!currentPin || !newPin || !confirmPin) {
+      setPinChangeError('Please fill in all PIN fields.');
+      return;
+    }
+    if (newPin !== confirmPin) {
+      setPinChangeError('New PIN and Confirm PIN do not match.');
+      return;
+    }
+    if (newPin.length < 4) {
+      setPinChangeError('New PIN must be at least 4 characters.');
+      return;
+    }
+
+    setIsChangingPin(true);
+    try {
+      const { data, error } = await supabase.rpc('update_recovery_pin', {
+        old_pin: currentPin,
+        new_pin: newPin,
+      });
+
+      if (error) {
+        setPinChangeError(error.message);
+      } else if (data === false) {
+        setPinChangeError('Current PIN is incorrect.');
+      } else {
+        setPinChangeSuccess('Recovery PIN updated successfully!');
+        setCurrentPin('');
+        setNewPin('');
+        setConfirmPin('');
+        setTimeout(() => setPinChangeSuccess(''), 4000);
+      }
+    } catch (err: any) {
+      setPinChangeError('Failed to update PIN: ' + (err?.message || 'Unknown error'));
+    }
+    setIsChangingPin(false);
+  };
+
+  const availableTabs = session 
+    ? ['general', 'social', 'copy', 'media', 'security'] 
+    : ['general', 'social', 'copy', 'media'];
+
+  const tabLabels: Record<string, string> = {
+    general: 'General',
+    social: 'Socials', 
+    copy: 'Website Text',
+    media: 'Work Media',
+    security: 'Security',
   };
 
   return (
@@ -172,7 +298,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
             <p className="text-sm text-white/60">Manage your Grave Care Kashmir website settings.</p>
           </div>
           <button 
-            onClick={onClose}
+            onClick={handleClose}
             className="w-10 h-10 rounded-full border border-border/40 bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors"
           >
             <X size={20} />
@@ -224,14 +350,31 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
             </div>
           ) : (
             <div className="space-y-6">
+              {/* Read-only mode warning — prominent */}
               {!session && (
-                <div className="p-3 bg-amber-500/20 border border-amber-500/50 rounded-lg text-amber-200 text-sm">
-                  <strong>Read-Only Mode:</strong> You unlocked via Recovery PIN. You cannot save changes to the database.
+                <div className="p-4 bg-amber-500/20 border border-amber-500/50 rounded-xl text-amber-200 text-sm flex items-center gap-3">
+                  <Lock className="h-5 w-5 shrink-0" />
+                  <div>
+                    <strong className="block">Read-Only Mode</strong>
+                    You unlocked via Recovery PIN. Saving changes requires full Admin Login (Email + Password).
+                  </div>
+                </div>
+              )}
+
+              {/* Save message toast */}
+              {saveMessage && (
+                <div className={`p-3 rounded-lg text-sm border ${
+                  saveMessage.type === 'success' 
+                    ? 'bg-green-500/20 border-green-500/50 text-green-200' 
+                    : 'bg-red-500/20 border-red-500/50 text-red-200'
+                }`}>
+                  {saveMessage.text}
                 </div>
               )}
               
+              {/* Tabs */}
               <div className="flex border border-white/10 rounded-xl overflow-hidden bg-white/5 flex-wrap">
-                {['general', 'social', 'copy', 'media'].map(tab => (
+                {availableTabs.map(tab => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
@@ -239,7 +382,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                       activeTab === tab ? 'bg-primary text-white' : 'text-white/50 hover:bg-white/10'
                     }`}
                   >
-                    {tab === 'general' ? 'General' : tab === 'social' ? 'Socials' : tab === 'copy' ? 'Website Text' : 'Work Media'}
+                    {tabLabels[tab]}
                   </button>
                 ))}
               </div>
@@ -251,15 +394,15 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <label className="text-xs font-bold text-white/60">Business / Brand name</label>
-                        <input type="text" value={formData.brand_name || ''} onChange={e => setFormData({...formData, brand_name: e.target.value})} className="w-full px-4 py-2 bg-white/10 rounded-lg text-white text-sm focus:outline-none" />
+                        <input type="text" value={formData.brand_name || ''} onChange={e => updateFormData({ brand_name: e.target.value })} placeholder={TOP_LEVEL_DEFAULTS.brand_name} className="w-full px-4 py-2 bg-white/10 rounded-lg text-white text-sm focus:outline-none placeholder:text-white/25" />
                       </div>
                       <div className="space-y-1">
                         <label className="text-xs font-bold text-white/60">WhatsApp number (with country code, e.g. 917006830501)</label>
-                        <input type="text" value={formData.whatsapp_number || ''} onChange={e => setFormData({...formData, whatsapp_number: e.target.value})} className="w-full px-4 py-2 bg-white/10 rounded-lg text-white text-sm focus:outline-none" />
+                        <input type="text" value={formData.whatsapp_number || ''} onChange={e => updateFormData({ whatsapp_number: e.target.value })} placeholder={TOP_LEVEL_DEFAULTS.whatsapp_number} className="w-full px-4 py-2 bg-white/10 rounded-lg text-white text-sm focus:outline-none placeholder:text-white/25" />
                       </div>
                       <div className="space-y-1 md:col-span-2">
-                        <label className="text-xs font-bold text-white/60">WhatsApp default message</label>
-                        <textarea rows={2} value={formData.whatsapp_message || ''} onChange={e => setFormData({...formData, whatsapp_message: e.target.value})} className="w-full px-4 py-2 bg-white/10 rounded-lg text-white text-sm focus:outline-none" />
+                        <label className="text-xs font-bold text-white/60">WhatsApp default message (pre-filled when user clicks chat button)</label>
+                        <textarea rows={2} value={formData.whatsapp_message || ''} onChange={e => updateFormData({ whatsapp_message: e.target.value })} placeholder="e.g. Assalamu Alaikum, I would like to inquire about grave care services..." className="w-full px-4 py-2 bg-white/10 rounded-lg text-white text-sm focus:outline-none placeholder:text-white/25" />
                       </div>
                     </div>
                   </div>
@@ -269,11 +412,11 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                     <div className="grid grid-cols-1 gap-4">
                       <div className="space-y-1">
                         <label className="text-xs font-bold text-white/60">Hero Main Title (Use a comma to split lines, e.g. "Line 1, Line 2")</label>
-                        <input type="text" value={formData.hero_title || ''} onChange={e => setFormData({...formData, hero_title: e.target.value})} className="w-full px-4 py-2 bg-white/10 rounded-lg text-white text-sm focus:outline-none" />
+                        <input type="text" value={formData.hero_title || ''} onChange={e => updateFormData({ hero_title: e.target.value })} placeholder={TOP_LEVEL_DEFAULTS.hero_title} className="w-full px-4 py-2 bg-white/10 rounded-lg text-white text-sm focus:outline-none placeholder:text-white/25" />
                       </div>
                       <div className="space-y-1">
                         <label className="text-xs font-bold text-white/60">Hero Subtitle</label>
-                        <textarea rows={2} value={formData.hero_subtitle || ''} onChange={e => setFormData({...formData, hero_subtitle: e.target.value})} className="w-full px-4 py-2 bg-white/10 rounded-lg text-white text-sm focus:outline-none" />
+                        <textarea rows={2} value={formData.hero_subtitle || ''} onChange={e => updateFormData({ hero_subtitle: e.target.value })} placeholder={TOP_LEVEL_DEFAULTS.hero_subtitle} className="w-full px-4 py-2 bg-white/10 rounded-lg text-white text-sm focus:outline-none placeholder:text-white/25" />
                       </div>
                     </div>
                   </div>
@@ -283,11 +426,11 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                     <div className="grid grid-cols-1 gap-4">
                       <div className="space-y-1">
                         <label className="text-xs font-bold text-white/60">CTA Heading</label>
-                        <input type="text" value={formData.cta_title || ''} onChange={e => setFormData({...formData, cta_title: e.target.value})} className="w-full px-4 py-2 bg-white/10 rounded-lg text-white text-sm focus:outline-none" />
+                        <input type="text" value={formData.cta_title || ''} onChange={e => updateFormData({ cta_title: e.target.value })} placeholder={TOP_LEVEL_DEFAULTS.cta_title} className="w-full px-4 py-2 bg-white/10 rounded-lg text-white text-sm focus:outline-none placeholder:text-white/25" />
                       </div>
                       <div className="space-y-1">
                         <label className="text-xs font-bold text-white/60">CTA Subtext</label>
-                        <textarea rows={2} value={formData.cta_text || ''} onChange={e => setFormData({...formData, cta_text: e.target.value})} className="w-full px-4 py-2 bg-white/10 rounded-lg text-white text-sm focus:outline-none" />
+                        <textarea rows={2} value={formData.cta_text || ''} onChange={e => updateFormData({ cta_text: e.target.value })} placeholder={TOP_LEVEL_DEFAULTS.cta_text} className="w-full px-4 py-2 bg-white/10 rounded-lg text-white text-sm focus:outline-none placeholder:text-white/25" />
                       </div>
                     </div>
                   </div>
@@ -299,7 +442,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                         <label className="text-xs font-bold text-white/60">Form Submission Method</label>
                         <select 
                           value={contentData.form_submit_method || 'whatsapp'}
-                          onChange={e => setContentData({...contentData, form_submit_method: e.target.value})}
+                          onChange={e => updateContentData('form_submit_method', e.target.value)}
                           className="w-full px-4 py-2 bg-white/10 rounded-lg text-white text-sm focus:outline-none"
                         >
                           <option value="whatsapp">Send via WhatsApp</option>
@@ -311,8 +454,9 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                         <input 
                           type="email" 
                           value={contentData.admin_email || ''} 
-                          onChange={e => setContentData({...contentData, admin_email: e.target.value})} 
-                          className="w-full px-4 py-2 bg-white/10 rounded-lg text-white text-sm" 
+                          onChange={e => updateContentData('admin_email', e.target.value)} 
+                          placeholder="admin@example.com"
+                          className="w-full px-4 py-2 bg-white/10 rounded-lg text-white text-sm placeholder:text-white/25" 
                         />
                       </div>
                     </div>
@@ -326,11 +470,11 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <label className="text-xs font-bold text-white/60">Instagram URL</label>
-                      <input type="text" value={formData.instagram_profile_url || ''} onChange={e => setFormData({...formData, instagram_profile_url: e.target.value})} className="w-full px-4 py-2 bg-white/10 rounded-lg text-white text-sm" />
+                      <input type="text" value={formData.instagram_profile_url || ''} onChange={e => updateFormData({ instagram_profile_url: e.target.value })} placeholder="https://instagram.com/your-profile" className="w-full px-4 py-2 bg-white/10 rounded-lg text-white text-sm placeholder:text-white/25" />
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-bold text-white/60">Facebook URL</label>
-                      <input type="text" value={formData.facebook_profile_url || ''} onChange={e => setFormData({...formData, facebook_profile_url: e.target.value})} className="w-full px-4 py-2 bg-white/10 rounded-lg text-white text-sm" />
+                      <input type="text" value={formData.facebook_profile_url || ''} onChange={e => updateFormData({ facebook_profile_url: e.target.value })} placeholder="https://facebook.com/your-page" className="w-full px-4 py-2 bg-white/10 rounded-lg text-white text-sm placeholder:text-white/25" />
                     </div>
                   </div>
                 </div>
@@ -339,6 +483,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
               {activeTab === 'copy' && (
                 <div className="p-5 border border-primary/30 border-dashed rounded-2xl bg-primary/10 space-y-6">
                   <h3 className="text-xl text-white">Website Text Editor</h3>
+                  <p className="text-xs text-white/40">All fields are pre-filled with default text. Edit any field to customize your website content. Clearing a field will revert to the default shown as placeholder text.</p>
                   <div className="max-h-[500px] overflow-y-auto pr-4 space-y-10 custom-scrollbar">
                     {contentSchema.map(group => (
                       <div key={group.id} className="space-y-4">
@@ -353,15 +498,17 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                                 <textarea
                                   rows={3}
                                   value={contentData[field.key] || ''}
-                                  onChange={e => setContentData({...contentData, [field.key]: e.target.value})}
-                                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-primary/50 focus:outline-none transition-colors"
+                                  onChange={e => updateContentData(field.key, e.target.value)}
+                                  placeholder={field.defaultValue || ''}
+                                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-primary/50 focus:outline-none transition-colors placeholder:text-white/20"
                                 />
                               ) : (
                                 <input
                                   type="text"
                                   value={contentData[field.key] || ''}
-                                  onChange={e => setContentData({...contentData, [field.key]: e.target.value})}
-                                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-primary/50 focus:outline-none transition-colors"
+                                  onChange={e => updateContentData(field.key, e.target.value)}
+                                  placeholder={field.defaultValue || ''}
+                                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-primary/50 focus:outline-none transition-colors placeholder:text-white/20"
                                 />
                               )}
                             </div>
@@ -391,7 +538,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                           placeholder="https://instagram.com/..."
                           value={newMediaUrl}
                           onChange={(e) => setNewMediaUrl(e.target.value)}
-                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-primary/50 focus:outline-none"
+                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-primary/50 focus:outline-none placeholder:text-white/25"
                         />
                       </div>
                       <div className="space-y-1">
@@ -401,7 +548,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                           placeholder="https://... (Direct image link)"
                           value={newMediaThumbnail}
                           onChange={(e) => setNewMediaThumbnail(e.target.value)}
-                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-primary/50 focus:outline-none"
+                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-primary/50 focus:outline-none placeholder:text-white/25"
                         />
                       </div>
                       <div className="space-y-1 md:col-span-2">
@@ -411,13 +558,13 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                           placeholder="Restoration at Malkhah..."
                           value={newMediaCaption}
                           onChange={(e) => setNewMediaCaption(e.target.value)}
-                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-primary/50 focus:outline-none"
+                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-primary/50 focus:outline-none placeholder:text-white/25"
                         />
                       </div>
                     </div>
                     <button
                       onClick={handleAddMedia}
-                      disabled={isMediaSaving}
+                      disabled={isMediaSaving || !session}
                       className="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
                     >
                       {isMediaSaving ? 'Adding...' : 'Add to Gallery'}
@@ -467,20 +614,106 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                 </div>
               )}
 
+              {activeTab === 'security' && session && (
+                <div className="p-5 border border-primary/30 border-dashed rounded-2xl bg-primary/10 space-y-6">
+                  <div>
+                    <h3 className="text-xl text-white mb-1 flex items-center gap-2">
+                      <KeyRound className="h-5 w-5 text-primary" /> Security Settings
+                    </h3>
+                    <p className="text-sm text-white/60">Manage your Recovery PIN for quick panel access.</p>
+                  </div>
+
+                  <div className="bg-white/5 p-5 rounded-xl border border-white/10 space-y-4">
+                    <h4 className="text-sm font-bold text-white">Change Recovery PIN</h4>
+                    <p className="text-xs text-white/40">The Recovery PIN allows read-only access to this admin panel without full login credentials.</p>
+
+                    {pinChangeError && (
+                      <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200 text-sm">{pinChangeError}</div>
+                    )}
+                    {pinChangeSuccess && (
+                      <div className="p-3 bg-green-500/20 border border-green-500/50 rounded-lg text-green-200 text-sm">{pinChangeSuccess}</div>
+                    )}
+
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-white/60">Current PIN</label>
+                        <div className="relative">
+                          <input 
+                            type={showCurrentPin ? 'text' : 'password'} 
+                            value={currentPin} 
+                            onChange={e => setCurrentPin(e.target.value)} 
+                            placeholder="Enter current PIN" 
+                            className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-primary/50 focus:outline-none pr-10 placeholder:text-white/25" 
+                          />
+                          <button type="button" onClick={() => setShowCurrentPin(!showCurrentPin)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70">
+                            {showCurrentPin ? <EyeOff size={16} /> : <Eye size={16} />}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-white/60">New PIN</label>
+                        <div className="relative">
+                          <input 
+                            type={showNewPin ? 'text' : 'password'} 
+                            value={newPin} 
+                            onChange={e => setNewPin(e.target.value)} 
+                            placeholder="Enter new PIN (min 4 characters)" 
+                            className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-primary/50 focus:outline-none pr-10 placeholder:text-white/25" 
+                          />
+                          <button type="button" onClick={() => setShowNewPin(!showNewPin)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70">
+                            {showNewPin ? <EyeOff size={16} /> : <Eye size={16} />}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-white/60">Confirm New PIN</label>
+                        <input 
+                          type="password" 
+                          value={confirmPin} 
+                          onChange={e => setConfirmPin(e.target.value)} 
+                          placeholder="Re-enter new PIN" 
+                          className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-primary/50 focus:outline-none placeholder:text-white/25" 
+                        />
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleChangePin}
+                      disabled={isChangingPin}
+                      className="px-5 py-2 bg-amber-500/80 text-white text-sm font-semibold rounded-lg hover:bg-amber-500 transition-colors disabled:opacity-50"
+                    >
+                      {isChangingPin ? 'Updating...' : 'Update Recovery PIN'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Footer actions */}
               <div className="flex justify-between items-center pt-4 border-t border-white/10">
                 <button 
-                  onClick={handleLogout}
+                  onClick={handleClose}
                   className="px-4 py-2 text-sm text-white/50 hover:text-white transition-colors"
                 >
-                  Log out
+                  Log out & Close
                 </button>
-                <div className="flex gap-3">
+                <div className="flex gap-3 items-center">
+                  {!session && (
+                    <span className="text-xs text-amber-400/70 flex items-center gap-1">
+                      <Lock className="h-3 w-3" /> Read-Only
+                    </span>
+                  )}
                   <button 
                     onClick={handleSave}
-                    disabled={isSaving}
-                    className="px-6 py-2.5 bg-gradient-to-r from-[#25d366] to-[#b9ffc7] text-[#052011] font-bold rounded-full hover:scale-105 transition-transform disabled:opacity-50"
+                    disabled={isSaving || !session}
+                    className={`relative px-6 py-2.5 font-bold rounded-full transition-all disabled:opacity-50 ${
+                      session 
+                        ? 'bg-gradient-to-r from-[#25d366] to-[#b9ffc7] text-[#052011] hover:scale-105' 
+                        : 'bg-white/10 text-white/30 cursor-not-allowed'
+                    }`}
                   >
                     {isSaving ? 'Saving...' : 'Save Changes'}
+                    {hasChanges && session && (
+                      <span className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full animate-pulse" />
+                    )}
                   </button>
                 </div>
               </div>

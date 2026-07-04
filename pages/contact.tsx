@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 export default function Contact() {
   const router = useRouter();
   const { settings } = useSite();
+  const content = settings?.content_json || {};
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -164,10 +165,10 @@ export default function Contact() {
           {/* Header */}
           <div className="text-center mb-10">
             <h1 className="font-serif text-3xl font-extrabold text-foreground sm:text-4xl">
-              Caretaker Request Portal
+              {content.contactHeading || "Caretaker Request Portal"}
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Provide details below. Our Srinagar coordinator will inspect the grave site and prepare a visual proposal.
+              {content.contactSubtext || "Provide details below. Our Srinagar coordinator will inspect the grave site and prepare a visual proposal."}
             </p>
           </div>
 
@@ -379,10 +380,11 @@ export default function Contact() {
                         onChange={handleInputChange}
                         className="w-full px-4 py-2 text-sm bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
                       >
-                        <option value="Malkhah Cemetery, Srinagar">Malkhah Cemetery, Srinagar (Eidgah/Rainawari)</option>
-                        <option value="Hazratbal Shrine Graveyard">Hazratbal Shrine Graveyard, Srinagar</option>
-                        <option value="Sheikh-ul-Alam Cemetery, Budgam">Sheikh-ul-Alam Cemetery, Budgam</option>
-                        <option value="Naqshband Sahib Cemetery, Srinagar">Naqshband Sahib Cemetery, Srinagar</option>
+                        {/* Cemetery options — editable via admin panel */}
+                        <option value={content.bookingCemetery1 || "Malkhah Cemetery, Srinagar"}>{content.bookingCemetery1 || "Malkhah Cemetery, Srinagar"} (Eidgah/Rainawari)</option>
+                        <option value={content.bookingCemetery2 || "Hazratbal Shrine Graveyard"}>{content.bookingCemetery2 || "Hazratbal Shrine Graveyard"}, Srinagar</option>
+                        <option value={content.bookingCemetery3 || "Sheikh-ul-Alam Cemetery, Budgam"}>{content.bookingCemetery3 || "Sheikh-ul-Alam Cemetery, Budgam"}</option>
+                        <option value={content.bookingCemetery4 || "Naqshband Sahib Cemetery, Srinagar"}>{content.bookingCemetery4 || "Naqshband Sahib Cemetery, Srinagar"}</option>
                         <option value="Other / Private graveyard">Other / Local District Cemetery (Specify below)</option>
                       </select>
                     </div>

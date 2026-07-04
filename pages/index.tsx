@@ -38,6 +38,29 @@ export default function Home() {
     { num: "4", title: content.stepFourTitle || "Detailed Reporting", desc: content.stepFourText || "You receive high-quality before and after photos/videos of the completed work." },
   ];
 
+  const ecoCards = [
+    {
+      num: "01",
+      title: content.ecoCard1Title || "Fair wages for caretakers",
+      desc: content.ecoCard1Text || "Directly supporting Kashmiri local labor with dignified and fair compensation.",
+    },
+    {
+      num: "02",
+      title: content.ecoCard2Title || "Organic horticulture",
+      desc: content.ecoCard2Text || "Using manure and organic soil enrichment, protecting local cemetery ecosystems.",
+    },
+    {
+      num: "03",
+      title: content.ecoCard3Title || "Respectful Appearance",
+      desc: content.ecoCard3Text || "Maintaining clean surroundings, preserving the traditional forest cemetery appearance.",
+    },
+    {
+      num: "04",
+      title: content.ecoCard4Title || "GPS & Transparent reporting",
+      desc: content.ecoCard4Text || "Every session is geo-tagged and detailed before-after photos are stored in reports.",
+    },
+  ];
+
   return (
     <>
       <Head>
@@ -138,26 +161,26 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-5 space-y-6">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary">
-                <Sparkles className="h-3 w-3 mr-1.5" /> High Standards of Restoration
+                <Sparkles className="h-3 w-3 mr-1.5" /> {content.beforeAfterTag || "High Standards of Restoration"}
               </span>
               <h2 className="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-                See the Care and Detail in Our Work
+                {content.beforeAfterHeading || "See the Care and Detail in Our Work"}
               </h2>
               <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
-                Weathering in Kashmir&apos;s winters can cause marble staining, moss growth, and name engraving decay. Our professional team performs delicate chemical-free cleaning, re-painting of Arabic and Persian calligraphies, and complete landscaping.
+                {content.beforeAfterText || "Weathering in Kashmir\u0027s winters can cause marble staining, moss growth, and name engraving decay. Our professional team performs delicate chemical-free cleaning, re-painting of Arabic and Persian calligraphies, and complete landscaping."}
               </p>
               <div className="space-y-3">
                 <div className="flex items-center space-x-3 text-sm">
                   <span className="h-5 w-5 bg-primary text-white rounded-full flex items-center justify-center text-xs font-bold">✓</span>
-                  <span className="text-foreground">Delicate stain removal from premium marble</span>
+                  <span className="text-foreground">{content.beforeAfterBullet1 || "Delicate stain removal from premium marble"}</span>
                 </div>
                 <div className="flex items-center space-x-3 text-sm">
                   <span className="h-5 w-5 bg-primary text-white rounded-full flex items-center justify-center text-xs font-bold">✓</span>
-                  <span className="text-foreground">Weed extraction &amp; maintaining neat local climate-ready grass</span>
+                  <span className="text-foreground">{content.beforeAfterBullet2 || "Weed extraction & maintaining neat local climate-ready grass"}</span>
                 </div>
                 <div className="flex items-center space-x-3 text-sm">
                   <span className="h-5 w-5 bg-primary text-white rounded-full flex items-center justify-center text-xs font-bold">✓</span>
-                  <span className="text-foreground">Calligraphy re-inking (Gold, Black, or White paint)</span>
+                  <span className="text-foreground">{content.beforeAfterBullet3 || "Calligraphy re-inking (Gold, Black, or White paint)"}</span>
                 </div>
               </div>
               <div className="pt-2">
@@ -165,7 +188,7 @@ export default function Home() {
                   href="/services"
                   className="inline-flex items-center text-sm font-medium text-primary hover:text-primary/80 group"
                 >
-                  Explore pricing packages
+                  {content.beforeAfterLink || "Explore pricing packages"}
                   <ArrowRight className="h-4 w-4 ml-1.5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </div>
@@ -226,48 +249,35 @@ export default function Home() {
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
               <div className="space-y-5">
                 <div className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-primary/20 text-primary">
-                  <Leaf className="h-3.5 w-3.5 mr-1" /> Eco-Conscious & Ethical Custodianship
+                  <Leaf className="h-3.5 w-3.5 mr-1" /> {content.ecoTag || "Eco-Conscious & Ethical Custodianship"}
                 </div>
                 <h2 className="font-serif text-2xl font-bold text-foreground md:text-3xl">
-                  Our Eco-Ethical Preservation Policy
+                  {content.ecoHeading || "Our Eco-Ethical Preservation Policy"}
                 </h2>
                 <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
-                  We believe in respecting both the memory of the deceased and the pristine environment of Kashmir. We never use harsh chemical weedkillers that harm local soils and water tables.
+                  {content.ecoText1 || "We believe in respecting both the memory of the deceased and the pristine environment of Kashmir. We never use harsh chemical weedkillers that harm local soils and water tables."}
                 </p>
                 <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
-                  Instead, we employ local Kashmiri caretakers and gardeners, providing them with a fair, family-supporting wage. We prioritize keeping the grave clean and well-maintained while respecting the local graveyard aesthetics.
+                  {content.ecoText2 || "Instead, we employ local Kashmiri caretakers and gardeners, providing them with a fair, family-supporting wage. We prioritize keeping the grave clean and well-maintained while respecting the local graveyard aesthetics."}
                 </p>
                 <div className="pt-2">
                   <Link
                     href="/about"
                     className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/95 rounded-xl transition-colors shadow-sm"
                   >
-                    Learn about our values
+                    {content.ecoLearnMore || "Learn about our values"}
                   </Link>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-5 bg-background rounded-2xl border border-border/85 shadow-xs space-y-2">
-                  <div className="text-primary text-xl font-serif">01 /</div>
-                  <h4 className="font-semibold text-sm">Fair wages for caretakers</h4>
-                  <p className="text-[11px] text-muted-foreground">Directly supporting Kashmiri local labor with dignified and fair compensation.</p>
-                </div>
-                <div className="p-5 bg-background rounded-2xl border border-border/85 shadow-xs space-y-2">
-                  <div className="text-primary text-xl font-serif">02 /</div>
-                  <h4 className="font-semibold text-sm">Organic horticulture</h4>
-                  <p className="text-[11px] text-muted-foreground">Using manure and organic soil enrichment, protecting local cemetery ecosystems.</p>
-                </div>
-                <div className="p-5 bg-background rounded-2xl border border-border/85 shadow-xs space-y-2">
-                  <div className="text-primary text-xl font-serif">03 /</div>
-                  <h4 className="font-semibold text-sm">Respectful Appearance</h4>
-                  <p className="text-[11px] text-muted-foreground">Maintaining clean surroundings, preserving the traditional forest cemetery appearance.</p>
-                </div>
-                <div className="p-5 bg-background rounded-2xl border border-border/85 shadow-xs space-y-2">
-                  <div className="text-primary text-xl font-serif">04 /</div>
-                  <h4 className="font-semibold text-sm">GPS & Transparent reporting</h4>
-                  <p className="text-[11px] text-muted-foreground">Every session is geo-tagged and detailed before-after photos are stored in reports.</p>
-                </div>
+                {ecoCards.map((card) => (
+                  <div key={card.num} className="p-5 bg-background rounded-2xl border border-border/85 shadow-xs space-y-2">
+                    <div className="text-primary text-xl font-serif">{card.num} /</div>
+                    <h4 className="font-semibold text-sm">{card.title}</h4>
+                    <p className="text-[11px] text-muted-foreground">{card.desc}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -302,12 +312,12 @@ export default function Home() {
                 href="/services"
                 className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-primary-foreground bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-xl transition-all border border-primary-foreground/20"
               >
-                View Services &amp; Packages
+                {content.ctaServicesButton || "View Services & Packages"}
               </Link>
             </div>
             <div className="text-xs text-primary-foreground/60 flex justify-center items-center gap-2 pt-2">
               <HeartHandshake className="h-4 w-4" />
-              <span>Dedicated customer support and photo reports with every service session</span>
+              <span>{content.ctaFooterNote || "Dedicated customer support and photo reports with every service session"}</span>
             </div>
           </div>
         </Reveal>

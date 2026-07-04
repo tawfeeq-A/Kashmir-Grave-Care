@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { Mail, Phone, MapPin, ShieldCheck, Check } from "lucide-react";
 import { useSite } from "@/context/SiteContext";
@@ -10,6 +10,31 @@ export default function Footer({ onOpenAdmin }: { onOpenAdmin?: () => void }) {
   const currentYear = new Date().getFullYear();
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+
+  // Triple-tap logic for admin panel trigger
+  const tapCountRef = useRef(0);
+  const tapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleAdminTrigger = useCallback(() => {
+    tapCountRef.current += 1;
+
+    // Clear existing timer
+    if (tapTimerRef.current) {
+      clearTimeout(tapTimerRef.current);
+    }
+
+    if (tapCountRef.current >= 3) {
+      // 3 taps reached — open admin
+      tapCountRef.current = 0;
+      onOpenAdmin?.();
+      return;
+    }
+
+    // Reset after 800ms of inactivity
+    tapTimerRef.current = setTimeout(() => {
+      tapCountRef.current = 0;
+    }, 800);
+  }, [onOpenAdmin]);
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,7 +118,7 @@ export default function Footer({ onOpenAdmin }: { onOpenAdmin?: () => void }) {
             <ul className="space-y-3">
               <li className="flex items-start space-x-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                <span>Srinagar, Jammu & Kashmir, 190001</span>
+                <span>{content.displayAddress || "Srinagar, Jammu & Kashmir, 190001"}</span>
               </li>
               <li className="flex items-center space-x-2 text-sm text-muted-foreground">
                 <Phone className="h-4 w-4 text-primary shrink-0" />
@@ -103,7 +128,7 @@ export default function Footer({ onOpenAdmin }: { onOpenAdmin?: () => void }) {
               </li>
               <li className="flex items-center space-x-2 text-sm text-muted-foreground">
                 <Mail className="h-4 w-4 text-primary shrink-0" />
-                <span>support@gravecarekashmir.com</span>
+                <span>{content.displayEmail || "support@gravecarekashmir.com"}</span>
               </li>
             </ul>
           </div>
@@ -111,10 +136,10 @@ export default function Footer({ onOpenAdmin }: { onOpenAdmin?: () => void }) {
           {/* Subscribe Box */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">
-              Diaspora Updates
+              {content.newsletterHeading || "Diaspora Updates"}
             </h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Subscribe to receive updates regarding cemetery conditions, seasonal plantation schedules, and community graveyard support projects in Kashmir.
+              {content.newsletterText || "Subscribe to receive updates regarding cemetery conditions, seasonal plantation schedules, and community graveyard support projects in Kashmir."}
             </p>
             {subscribed ? (
               <div className="flex items-center gap-2 text-sm text-primary font-medium py-2 px-3 bg-primary/10 rounded-lg">
@@ -147,8 +172,8 @@ export default function Footer({ onOpenAdmin }: { onOpenAdmin?: () => void }) {
           <p>
             {content.footerCopyright || `© ${currentYear} ${settings?.brand_name || "Grave Care Kashmir"}. All rights reserved.`}
             <span 
-              onClick={onOpenAdmin} 
-              className="inline-flex w-3 h-3 ml-1 cursor-default text-transparent hover:text-amber-500/50 hover:cursor-pointer select-none transition-colors"
+              onClick={handleAdminTrigger} 
+              className="inline-flex w-3 h-3 ml-1 cursor-default text-transparent hover:text-transparent select-none"
               title=""
             >
               •

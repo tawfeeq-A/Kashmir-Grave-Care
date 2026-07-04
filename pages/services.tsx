@@ -94,10 +94,10 @@ export default function Services() {
             {packages.map((pkg) => (
               <Scroll3DTilt key={pkg.name} maxTilt={pkg.popular ? 4 : 6}>
                 <div
-                  className={`relative bg-background rounded-3xl p-8 border flex flex-col justify-between transition-all duration-300 h-full ${
+                  className={`relative bg-background rounded-3xl p-8 border flex flex-col justify-between transition-all duration-300 h-full cursor-pointer ${
                     pkg.popular
-                      ? "border-primary shadow-lg ring-1 ring-primary/20 scale-102 z-10"
-                      : "border-border/80 hover:shadow-md"
+                      ? "border-primary shadow-lg ring-1 ring-primary/20 scale-[1.02] z-10 hover:shadow-2xl hover:scale-[1.04] active:shadow-lg active:scale-[1.01]"
+                      : "border-border/80 shadow-sm hover:shadow-xl hover:scale-[1.02] hover:border-primary/30 active:shadow-md active:scale-[1.00]"
                   }`}
                 >
                 {pkg.popular && (

@@ -26,6 +26,21 @@ export default function About() {
     },
   ];
 
+  const cemeteries = [
+    {
+      name: content.cemetery1Name || "Malkhah Cemetery (Rainawari / Eidgah)",
+      tag: content.cemetery1Tag || "Srinagar\u0027s Largest",
+    },
+    {
+      name: content.cemetery2Name || "Hazratbal Shrine Graveyard",
+      tag: content.cemetery2Tag || "Serene Lakeside",
+    },
+    {
+      name: content.cemetery3Name || "Naqshband Sahib Cemetery",
+      tag: content.cemetery3Tag || "Heritage Site",
+    },
+  ];
+
   return (
     <>
       <Head>
@@ -42,19 +57,19 @@ export default function About() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-24">
             <div className="lg:col-span-6 space-y-6">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary">
-                <Heart className="h-3.5 w-3.5 mr-1.5 fill-current" /> Connecting Families
+                <Heart className="h-3.5 w-3.5 mr-1.5 fill-current" /> {content.aboutHeroTag || "Connecting Families"}
               </span>
               <h1 className="font-serif text-4xl font-extrabold text-foreground md:text-5xl tracking-tight leading-tight">
-                Our Story: Preserving Heritage & Dignity
+                {content.aboutHeroTitle || "Our Story: Preserving Heritage & Dignity"}
               </h1>
               <p className="text-muted-foreground leading-relaxed text-base">
-                Our cemeteries have stood for centuries as silent sentinels of remembrance. They represent our history, our families, and our deeply held respect for those who came before us.
+                {content.aboutHeroText1 || "Our cemeteries have stood for centuries as silent sentinels of remembrance. They represent our history, our families, and our deeply held respect for those who came before us."}
               </p>
               <p className="text-muted-foreground leading-relaxed text-base">
-                Grave Care Kashmir was founded by a group of passionate locals in Srinagar who recognized a growing challenge: as more Kashmiri families moved abroad to build lives in the Gulf, North America, and Europe, their ancestral graves in Srinagar, Sopore, Anantnag, and local village graveyards became increasingly neglected due to distance.
+                {content.aboutHeroText2 || "Grave Care Kashmir was founded by a group of passionate locals in Srinagar who recognized a growing challenge: as more Kashmiri families moved abroad to build lives in the Gulf, North America, and Europe, their ancestral graves in Srinagar, Sopore, Anantnag, and local village graveyards became increasingly neglected due to distance."}
               </p>
               <p className="text-muted-foreground leading-relaxed text-base">
-                Our service is built to be a bridge of filial duty and love. We combine traditional respect with modern communication so that distance never weakens your connection to your ancestors.
+                {content.aboutHeroText3 || "Our service is built to be a bridge of filial duty and love. We combine traditional respect with modern communication so that distance never weakens your connection to your ancestors."}
               </p>
             </div>
 
@@ -99,7 +114,7 @@ export default function About() {
             <div className="flex flex-col lg:flex-row gap-10 items-center">
               <div className="lg:w-1/2 space-y-6">
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/20 text-primary">
-                  <BookOpen className="h-3.5 w-3.5 mr-1" /> Heritage
+                  <BookOpen className="h-3.5 w-3.5 mr-1" /> {content.aboutOurStoryTag || "Heritage"}
                 </span>
                 <h2 className="font-serif text-3xl font-bold text-foreground">
                   {content.aboutOurStoryHeading || "Serving Across Kashmir"}
@@ -114,20 +129,16 @@ export default function About() {
               {/* Visual Grid representing cemeteries of Kashmir */}
               <div className="space-y-4">
                 <div className="p-6 bg-background rounded-2xl border border-border">
-                  <h4 className="font-serif font-bold text-foreground text-lg mb-2">Srinagar Cemeteries We Regularly Serve</h4>
+                  <h4 className="font-serif font-bold text-foreground text-lg mb-2">
+                    {content.aboutCemeteriesHeading || "Srinagar Cemeteries We Regularly Serve"}
+                  </h4>
                   <ul className="space-y-2.5 text-sm text-muted-foreground">
-                    <li className="flex items-center justify-between">
-                      <span>Malkhah Cemetery (Rainawari / Eidgah)</span>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-foreground">Srinagar&apos;s Largest</span>
-                    </li>
-                    <li className="flex items-center justify-between">
-                      <span>Hazratbal Shrine Graveyard</span>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-foreground">Serene Lakeside</span>
-                    </li>
-                    <li className="flex items-center justify-between">
-                      <span>Naqshband Sahib Cemetery</span>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-foreground">Heritage Site</span>
-                    </li>
+                    {cemeteries.map((cem, idx) => (
+                      <li key={idx} className="flex items-center justify-between">
+                        <span>{cem.name}</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-foreground">{cem.tag}</span>
+                      </li>
+                    ))}
                   </ul>
                 </div>
               </div>
