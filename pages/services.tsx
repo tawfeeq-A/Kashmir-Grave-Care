@@ -129,7 +129,7 @@ export default function Services() {
 
                 <div className="pt-8 mt-auto">
                   <a
-                    href={`https://wa.me/${(settings?.whatsapp_number || "917006830501").replace(/[^0-9]/g, '')}`}
+                    href={`https://wa.me/${(settings?.whatsapp_number || "917006830501").replace(/[^0-9]/g, '')}?text=${encodeURIComponent(settings?.whatsapp_message || "")}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={`flex w-full items-center justify-center px-4 py-3 text-sm font-semibold rounded-xl transition-all ${
@@ -162,7 +162,7 @@ export default function Services() {
                 </p>
                 <div className="pt-4">
                   <a
-                    href={`https://wa.me/${(settings?.whatsapp_number || "917006830501").replace(/[^0-9]/g, '')}`}
+                    href={`https://wa.me/${(settings?.whatsapp_number || "917006830501").replace(/[^0-9]/g, '')}?text=${encodeURIComponent(settings?.whatsapp_message || "")}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center text-sm font-semibold text-primary hover:text-primary/80 transition-colors"

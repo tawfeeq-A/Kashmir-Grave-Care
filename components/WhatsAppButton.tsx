@@ -5,10 +5,12 @@ export default function WhatsAppButton() {
   const { settings } = useSite();
   const phone = settings?.whatsapp_number || "917006830501";
   
+  const message = settings?.whatsapp_message || "";
+  
   return (
     <a 
       className="fixed right-[22px] bottom-[22px] w-[58px] h-[58px] grid place-items-center rounded-full bg-gradient-to-br from-[#25d366] to-[#b9ffc7] text-[#052011] text-[27px] shadow-[0_16px_38px_rgba(37,211,102,0.30)] z-40 border-[3px] border-white/16 animate-[whatsappPulse_2.4s_ease-in-out_infinite] hover:scale-110 transition-transform"
-      href={`https://wa.me/${phone.replace(/[^0-9]/g, '')}`} 
+      href={`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`} 
       aria-label="Open WhatsApp chat"
       target="_blank"
       rel="noopener noreferrer"

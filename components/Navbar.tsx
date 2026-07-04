@@ -102,7 +102,7 @@ export default function Navbar() {
             </div>
             
             <a
-              href={`https://wa.me/${(settings?.whatsapp_number || "917006830501").replace(/[^0-9]/g, '')}`}
+              href={`https://wa.me/${(settings?.whatsapp_number || "917006830501").replace(/[^0-9]/g, '')}?text=${encodeURIComponent(settings?.whatsapp_message || "")}`}
               target="_blank"
               rel="noopener noreferrer"
               className={`inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium rounded-full transition-all hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 ${
@@ -198,7 +198,7 @@ export default function Navbar() {
 
           <div className="pt-4 border-t border-border mt-4">
             <a
-              href={`https://wa.me/${(settings?.whatsapp_number || "917006830501").replace(/[^0-9]/g, '')}`}
+              href={`https://wa.me/${(settings?.whatsapp_number || "917006830501").replace(/[^0-9]/g, '')}?text=${encodeURIComponent(settings?.whatsapp_message || "")}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex w-full items-center justify-center px-4 py-3 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/95 rounded-xl transition-all shadow-sm"
