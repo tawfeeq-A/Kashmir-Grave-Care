@@ -60,12 +60,12 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden lg:flex items-center lg:space-x-5 xl:space-x-8">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`relative text-sm font-medium transition-colors ${
+                className={`relative text-sm font-medium transition-colors whitespace-nowrap ${
                   isActive(link.href)
                     ? showLightText
                       ? "text-white font-semibold"
@@ -86,7 +86,7 @@ export default function Navbar() {
           </nav>
 
           {/* Call to Action and Socials */}
-          <div className="hidden md:flex items-center space-x-5">
+          <div className="hidden lg:flex items-center lg:space-x-4 xl:space-x-5">
             {/* Social Icons */}
             <div className={`flex items-center space-x-3 mr-2 ${showLightText ? "text-white/70" : "text-muted-foreground"}`}>
               {settings?.instagram_profile_url && (
@@ -116,7 +116,7 @@ export default function Navbar() {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="flex md:hidden">
+          <div className="flex lg:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
               type="button"
@@ -137,14 +137,14 @@ export default function Navbar() {
       {/* Mobile Drawer Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Mobile Drawer Menu */}
       <div
-        className={`fixed top-0 right-0 bottom-0 z-50 w-4/5 max-w-sm bg-background border-l border-border px-6 py-6 transition-transform duration-300 ease-in-out md:hidden shadow-2xl ${
+        className={`fixed top-0 right-0 bottom-0 z-50 w-4/5 max-w-sm bg-background border-l border-border px-6 py-6 transition-transform duration-300 ease-in-out lg:hidden shadow-2xl ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
