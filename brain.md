@@ -28,6 +28,8 @@ grave-care-kashmir/
 │   ├── SVGPathTimeline.tsx  # Scroll-drawn SVG path timeline with alternating nodes
 │   ├── ExpandingPanels.tsx  # Interactive accordion panels (one active, rest contracted)
 │   ├── AnimatedCounters.tsx # Circular SVG gauge counters with GSAP count-up
+│   ├── HoverFocusGrid.tsx   # 3-tile grid with hover scale transitions
+│   ├── WobblySphereCanvas.tsx # 3D-projected wave sphere controlled by scroll velocity and depth
 │   ├── Navbar.tsx           # Fixed navbar with scroll-based transparency + mobile drawer
 │   ├── Footer.tsx           # Footer with monumental scrolling background text
 │   ├── OrbitalHero.tsx      # 3D orbital card with floating info cards
@@ -49,13 +51,16 @@ grave-care-kashmir/
 │   └── contentSchema.ts     # Content JSON schema definition
 ├── styles/
 │   └── globals.css          # Global styles — CSS variables, keyframes, utilities, dark mode
-├── public/
-│   └── images/
-│       ├── logo.jpg
-│       ├── kashmir-cemetery.png
-│       ├── grave-before-final.jpg
-│       └── grave-after-final.jpg
-└── brain.md                 # THIS FILE — project reference
+└── public/
+    └── images/
+        ├── logo.jpg
+        ├── kashmir-cemetery.png
+        ├── grave-before-final.jpg
+        ├── grave-after-final.jpg
+        ├── eco_caretaker_wages.png
+        ├── eco_organic_soil.png
+        ├── eco_cemetery_heritage.png
+        └── eco_gps_reporting.png
 ```
 
 ---

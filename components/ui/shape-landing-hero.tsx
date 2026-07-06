@@ -108,7 +108,7 @@ function HeroGeometric({
                 />
             </div>
 
-            <div className="absolute inset-0 bg-gradient-to-br from-[#1E5C45]/[0.12] via-transparent to-[#C2841A]/[0.08] blur-3xl z-[1]" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#1E5C45]/[0.12] via-transparent to-[#C2841A]/[0.08] blur-3xl z-[1] pointer-events-none" />
 
             <div className="absolute inset-0 overflow-hidden z-[2]">
                 <ElegantShape
@@ -169,14 +169,18 @@ function HeroGeometric({
                             <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80">
                                 {title1}
                             </span>
-                            <br />
-                            <span
-                                className={cn(
-                                    "bg-clip-text text-transparent bg-gradient-to-r from-amber-200 via-white to-[#C2841A] "
-                                )}
-                            >
-                                {title2}
-                            </span>
+                            {title2 && (
+                                <>
+                                    <br />
+                                    <span
+                                        className={cn(
+                                            "bg-clip-text text-transparent bg-gradient-to-r from-amber-200 via-white to-[#C2841A] "
+                                        )}
+                                    >
+                                        {title2}
+                                    </span>
+                                </>
+                            )}
                         </h1>
                     </motion.div>
 

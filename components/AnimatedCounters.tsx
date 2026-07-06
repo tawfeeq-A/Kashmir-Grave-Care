@@ -33,6 +33,7 @@ export default function AnimatedCounters({
 
   useEffect(() => {
     if (!sectionRef.current) return;
+    const tweens: gsap.core.Tween[] = [];
 
     const trigger = ScrollTrigger.create({
       trigger: sectionRef.current,
@@ -44,7 +45,7 @@ export default function AnimatedCounters({
 
         counters.forEach((counter, idx) => {
           const obj = { val: 0 };
-          gsap.to(obj, {
+          const tween = gsap.to(obj, {
             val: counter.value,
             duration: 2,
             ease: "power2.out",
@@ -57,12 +58,14 @@ export default function AnimatedCounters({
               });
             },
           });
+          tweens.push(tween);
         });
       },
     });
 
     return () => {
       trigger.kill();
+      tweens.forEach((t) => t.kill());
     };
   }, [counters]);
 
@@ -93,13 +96,13 @@ export default function AnimatedCounters({
         {/* Counter grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           {counters.map((counter, idx) => {
-            const percentage = Math.min(
-              100,
-              (values[idx] / counter.value) * 100
-            );
+            const percentage = counter.value > 0
+              ? Math.min(100, (values[idx] / counter.value) * 100)
+              : 0;
             const circumference = 2 * Math.PI * 45;
-            const dashOffset =
-              circumference - (percentage / 100) * circumference;
+            const dashOffset = counter.value > 0
+              ? circumference - (percentage / 100) * circumference
+              : circumference;
 
             return (
               <div

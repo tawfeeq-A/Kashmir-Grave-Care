@@ -59,7 +59,7 @@ export default function Footer({ onOpenAdmin }: { onOpenAdmin?: () => void }) {
   return (
     <footer className="bg-secondary/40 border-t border-border/60 relative overflow-hidden">
       {/* Monumental scrolling text — MyWebLab inspired */}
-      <div className="absolute top-1/2 -translate-y-1/2 left-0 w-full overflow-hidden pointer-events-none select-none">
+      <div className="absolute top-1/2 -translate-y-1/2 left-0 w-full overflow-hidden pointer-events-none select-none" aria-hidden="true">
         <div className="animate-scrollText whitespace-nowrap">
           <span className="monumental-text">
             Grave Care Kashmir &nbsp;•&nbsp; Preserving Peace &amp; Memories &nbsp;•&nbsp; 
