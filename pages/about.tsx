@@ -3,6 +3,7 @@ import Head from "next/head";
 import Image from "next/image";
 import { Users, ShieldCheck, Heart, Sparkles, HeartHandshake, BookOpen, Leaf } from "lucide-react";
 import { useSite } from "@/context/SiteContext";
+import ScrollReveal from "@/components/ScrollReveal";
 
 export default function About() {
   const { settings } = useSite();
@@ -29,7 +30,7 @@ export default function About() {
   const cemeteries = [
     {
       name: content.cemetery1Name || "Malkhah Cemetery (Rainawari / Eidgah)",
-      tag: content.cemetery1Tag || "Srinagar\u0027s Largest",
+      tag: content.cemetery1Tag || "Srinagar's Largest",
     },
     {
       name: content.cemetery2Name || "Hazratbal Shrine Graveyard",
@@ -55,7 +56,7 @@ export default function About() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Main Story Hero */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-24">
-            <div className="lg:col-span-6 space-y-6">
+            <ScrollReveal direction="left" className="lg:col-span-6 space-y-6">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary">
                 <Heart className="h-3.5 w-3.5 mr-1.5 fill-current" /> {content.aboutHeroTag || "Connecting Families"}
               </span>
@@ -71,79 +72,88 @@ export default function About() {
               <p className="text-muted-foreground leading-relaxed text-base">
                 {content.aboutHeroText3 || "Our service is built to be a bridge of filial duty and love. We combine traditional respect with modern communication so that distance never weakens your connection to your ancestors."}
               </p>
-            </div>
+            </ScrollReveal>
 
-            <div className="lg:col-span-6">
-              <div className="relative aspect-square w-full overflow-hidden rounded-3xl shadow-xl border border-border bg-zinc-950">
+            <ScrollReveal direction="right" delay={0.2} className="lg:col-span-6">
+              <div className="relative aspect-square w-full overflow-hidden rounded-3xl shadow-xl border border-border bg-zinc-950 group">
                 <Image
                   src="/images/kashmir-cemetery.png"
                   alt="Traditional Kashmir cemetery with white marble graves and Chinar trees"
                   fill
-                  className="object-cover opacity-95"
+                  className="object-cover opacity-95 transition-transform duration-700 group-hover:scale-105"
                 />
+                {/* Gradient overlay on hover */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </div>
-            </div>
+            </ScrollReveal>
           </div>
 
-          {/* Three Pillars: Ethics, Eco, Quality */}
+          {/* Three Pillars */}
           <div className="border-t border-border/40 pt-16 mb-24">
-            <div className="text-center max-w-2xl mx-auto mb-16">
-              <h1 className="font-serif text-3xl font-bold sm:text-4xl text-foreground">
-                {content.aboutHeading || "Our Story of Compassion"}
-              </h1>
-              <p className="mt-4 text-muted-foreground max-w-2xl text-lg">
-                {content.aboutSubHeading || "Caring for those who have departed, comforting those who remain."}
-              </p>
-            </div>
+            <ScrollReveal direction="up">
+              <div className="text-center max-w-2xl mx-auto mb-16">
+                <h2 className="font-serif text-3xl font-bold sm:text-4xl text-foreground">
+                  {content.aboutHeading || "Our Story of Compassion"}
+                </h2>
+                <p className="mt-4 text-muted-foreground max-w-2xl text-lg">
+                  {content.aboutSubHeading || "Caring for those who have departed, comforting those who remain."}
+                </p>
+              </div>
+            </ScrollReveal>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {pillars.map((pillar, idx) => (
-                <div key={idx} className="bg-secondary/15 rounded-2xl p-8 border border-border/50 hover:shadow-md transition-shadow space-y-4">
-                  <div className="p-3 bg-primary/10 rounded-xl text-primary inline-block">
-                    {pillar.icon}
+                <ScrollReveal key={idx} direction="up" delay={idx * 0.15}>
+                  <div className="bg-secondary/15 rounded-2xl p-8 border border-border/50 hover:shadow-lg hover:border-primary/20 transition-all duration-400 space-y-4 premium-card h-full">
+                    <div className="p-3 bg-primary/10 rounded-xl text-primary inline-block">
+                      {pillar.icon}
+                    </div>
+                    <h3 className="text-lg font-bold text-foreground">{pillar.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{pillar.desc}</p>
                   </div>
-                  <h3 className="text-lg font-bold text-foreground">{pillar.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{pillar.desc}</p>
-                </div>
+                </ScrollReveal>
               ))}
             </div>
           </div>
 
           {/* Kashmir Cemeteries Section */}
-          <div className="bg-primary/5 rounded-3xl p-8 md:p-12 border border-primary/10">
-            <div className="flex flex-col lg:flex-row gap-10 items-center">
-              <div className="lg:w-1/2 space-y-6">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/20 text-primary">
-                  <BookOpen className="h-3.5 w-3.5 mr-1" /> {content.aboutOurStoryTag || "Heritage"}
-                </span>
-                <h2 className="font-serif text-3xl font-bold text-foreground">
-                  {content.aboutOurStoryHeading || "Serving Across Kashmir"}
-                </h2>
-                <div className="space-y-4 text-muted-foreground leading-relaxed text-sm">
-                  <p>{content.aboutOurStoryText1 || "Grave Care Kashmir began with a simple, deeply personal realization. Many families, separated by oceans and borders, carry a quiet heartache knowing they cannot regularly visit or maintain the resting places of their loved ones in Kashmir."}</p>
-                  <p>{content.aboutOurStoryText2 || "We understand that tending to a grave is an act of profound love. When distance prevents you from being there, we step in to fulfill that duty. We treat every resting place with the utmost reverence, as if it belonged to our own family."}</p>
-                  <p>{content.aboutOurStoryText3 || "Our mission is not just maintenance; it is providing peace of mind. We want you to feel connected, knowing that your loved one's memory is honored in a beautiful, well-cared-for space."}</p>
+          <ScrollReveal direction="up">
+            <div className="bg-primary/5 rounded-3xl p-8 md:p-12 border border-primary/10">
+              <div className="flex flex-col lg:flex-row gap-10 items-center">
+                <div className="lg:w-1/2 space-y-6">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/20 text-primary">
+                    <BookOpen className="h-3.5 w-3.5 mr-1" /> {content.aboutOurStoryTag || "Heritage"}
+                  </span>
+                  <h2 className="font-serif text-3xl font-bold text-foreground">
+                    {content.aboutOurStoryHeading || "Serving Across Kashmir"}
+                  </h2>
+                  <div className="space-y-4 text-muted-foreground leading-relaxed text-sm">
+                    <p>{content.aboutOurStoryText1 || "Grave Care Kashmir began with a simple, deeply personal realization. Many families, separated by oceans and borders, carry a quiet heartache knowing they cannot regularly visit or maintain the resting places of their loved ones in Kashmir."}</p>
+                    <p>{content.aboutOurStoryText2 || "We understand that tending to a grave is an act of profound love. When distance prevents you from being there, we step in to fulfill that duty. We treat every resting place with the utmost reverence, as if it belonged to our own family."}</p>
+                    <p>{content.aboutOurStoryText3 || "Our mission is not just maintenance; it is providing peace of mind. We want you to feel connected, knowing that your loved one's memory is honored in a beautiful, well-cared-for space."}</p>
+                  </div>
                 </div>
-              </div>
 
-              {/* Visual Grid representing cemeteries of Kashmir */}
-              <div className="space-y-4">
-                <div className="p-6 bg-background rounded-2xl border border-border">
-                  <h4 className="font-serif font-bold text-foreground text-lg mb-2">
-                    {content.aboutCemeteriesHeading || "Srinagar Cemeteries We Regularly Serve"}
-                  </h4>
-                  <ul className="space-y-2.5 text-sm text-muted-foreground">
-                    {cemeteries.map((cem, idx) => (
-                      <li key={idx} className="flex items-center justify-between">
-                        <span>{cem.name}</span>
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-foreground">{cem.tag}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <ScrollReveal direction="right" delay={0.2}>
+                  <div className="space-y-4">
+                    <div className="p-6 bg-background rounded-2xl border border-border glass-card">
+                      <h4 className="font-serif font-bold text-foreground text-lg mb-2">
+                        {content.aboutCemeteriesHeading || "Srinagar Cemeteries We Regularly Serve"}
+                      </h4>
+                      <ul className="space-y-2.5 text-sm text-muted-foreground">
+                        {cemeteries.map((cem, idx) => (
+                          <li key={idx} className="flex items-center justify-between">
+                            <span>{cem.name}</span>
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-foreground">{cem.tag}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </ScrollReveal>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
       </div>
     </>

@@ -7,6 +7,8 @@ import Footer from "@/components/Footer";
 import ProgressBar from "@/components/ProgressBar";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import AdminPanel from "@/components/AdminPanel";
+import MaskReveal from "@/components/MaskReveal";
+import SmoothScroll from "@/components/SmoothScroll";
 import { SiteProvider } from "@/context/SiteContext";
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -15,19 +17,23 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <SiteProvider>
       <Head>
-        <title>Grave Care Kashmir | Preserving Peace & Memories</title>
+        <title>Grave Care Kashmir | Preserving Peace &amp; Memories</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
-      <ProgressBar />
-      <div className="flex flex-col min-h-screen">
-        <Navbar />
-        <main className="flex-grow">
-          <Component {...pageProps} />
-        </main>
-        <Footer onOpenAdmin={() => setIsAdminOpen(true)} />
-        <WhatsAppButton />
-      </div>
-      {isAdminOpen && <AdminPanel onClose={() => setIsAdminOpen(false)} />}
+      <SmoothScroll>
+        <MaskReveal>
+          <ProgressBar />
+          <div className="flex flex-col min-h-screen">
+            <Navbar />
+            <main className="flex-grow">
+              <Component {...pageProps} />
+            </main>
+            <Footer onOpenAdmin={() => setIsAdminOpen(true)} />
+            <WhatsAppButton />
+          </div>
+          {isAdminOpen && <AdminPanel onClose={() => setIsAdminOpen(false)} />}
+        </MaskReveal>
+      </SmoothScroll>
     </SiteProvider>
   );
 }

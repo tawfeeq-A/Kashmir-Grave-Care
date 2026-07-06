@@ -57,18 +57,29 @@ export default function Footer({ onOpenAdmin }: { onOpenAdmin?: () => void }) {
   };
 
   return (
-    <footer className="bg-secondary/40 border-t border-border/60">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <footer className="bg-secondary/40 border-t border-border/60 relative overflow-hidden">
+      {/* Monumental scrolling text — MyWebLab inspired */}
+      <div className="absolute top-1/2 -translate-y-1/2 left-0 w-full overflow-hidden pointer-events-none select-none">
+        <div className="animate-scrollText whitespace-nowrap">
+          <span className="monumental-text">
+            Grave Care Kashmir &nbsp;•&nbsp; Preserving Peace &amp; Memories &nbsp;•&nbsp; 
+            Grave Care Kashmir &nbsp;•&nbsp; Preserving Peace &amp; Memories &nbsp;•&nbsp; 
+            Grave Care Kashmir &nbsp;•&nbsp; Preserving Peace &amp; Memories &nbsp;•&nbsp; 
+          </span>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           {/* Brand Info */}
           <div className="space-y-4">
-            <Link href="/" className="flex items-center space-x-2.5">
+            <Link href="/" className="flex items-center space-x-2.5 group">
               <img
                 src="/images/logo.jpg"
                 alt="Grave Care Kashmir Logo"
-                className="h-8 w-8 rounded-full object-cover border border-amber-500/20"
+                className="h-8 w-8 rounded-full object-cover border border-amber-500/20 group-hover:scale-110 transition-transform duration-300"
               />
-              <span className="font-serif text-xl font-bold tracking-tight text-foreground">
+              <span className="font-serif text-xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
                 {settings?.brand_name || "Grave Care Kashmir"}
               </span>
             </Link>
@@ -87,26 +98,19 @@ export default function Footer({ onOpenAdmin }: { onOpenAdmin?: () => void }) {
               Explore
             </h3>
             <ul className="space-y-2.5">
-              <li>
-                <Link href="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link href="/services" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Services & Pricing
-                </Link>
-              </li>
-              <li>
-                <Link href="/about" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Our Story
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Book a Service
-                </Link>
-              </li>
+              {[
+                { href: "/", label: "Home" },
+                { href: "/services", label: "Services & Pricing" },
+                { href: "/about", label: "Our Story" },
+                { href: "/contact", label: "Book a Service" },
+              ].map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center group">
+                    <span className="w-0 h-px bg-primary group-hover:w-3 transition-all duration-300 mr-0 group-hover:mr-2" />
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -142,7 +146,7 @@ export default function Footer({ onOpenAdmin }: { onOpenAdmin?: () => void }) {
               {content.newsletterText || "Subscribe to receive updates regarding cemetery conditions, seasonal plantation schedules, and community graveyard support projects in Kashmir."}
             </p>
             {subscribed ? (
-              <div className="flex items-center gap-2 text-sm text-primary font-medium py-2 px-3 bg-primary/10 rounded-lg">
+              <div className="flex items-center gap-2 text-sm text-primary font-medium py-2 px-3 bg-primary/10 rounded-lg animate-fadeIn">
                 <Check className="h-4 w-4" />
                 <span>Thank you! You&apos;ll receive updates soon.</span>
               </div>
@@ -154,11 +158,11 @@ export default function Footer({ onOpenAdmin }: { onOpenAdmin?: () => void }) {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-4 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm text-primary-foreground bg-primary hover:bg-primary/95 rounded-lg font-medium transition-colors whitespace-nowrap"
+                  className="px-4 py-2 text-sm text-primary-foreground bg-primary hover:bg-primary/95 rounded-lg font-medium transition-all whitespace-nowrap hover:shadow-md hover:-translate-y-0.5"
                 >
                   Join
                 </button>

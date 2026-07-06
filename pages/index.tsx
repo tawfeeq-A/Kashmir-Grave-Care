@@ -3,11 +3,19 @@ import Head from "next/head";
 import Link from "next/link";
 import { HeroGeometric } from "@/components/ui/shape-landing-hero";
 import ImageBeforeAfter from "@/components/ImageBeforeAfter";
-import Reveal from "@/components/Reveal";
 import OrbitalHero from "@/components/OrbitalHero";
+import ScrollReveal from "@/components/ScrollReveal";
+import SVGPathTimeline from "@/components/SVGPathTimeline";
+import HoverFocusGrid from "@/components/HoverFocusGrid";
+import AnimatedCounters from "@/components/AnimatedCounters";
+import HorizontalScrollSlider from "@/components/HorizontalScrollSlider";
 import Scroll3DTilt from "@/components/Scroll3DTilt";
 import { useSite } from "@/context/SiteContext";
-import { ShieldCheck, Calendar, Sparkles, Leaf, ArrowRight, Star, MessageSquare, Sprout, Axe, Ruler, BrickWall, HelpingHand, HeartHandshake, CheckCircle } from "lucide-react";
+import {
+  ShieldCheck, Calendar, Sparkles, Leaf, ArrowRight, Star,
+  MessageSquare, Sprout, Axe, Ruler, BrickWall, HelpingHand,
+  HeartHandshake, CheckCircle, Heart, Eye, MapPin, Users,
+} from "lucide-react";
 
 export default function Home() {
   const { settings } = useSite();
@@ -43,23 +51,68 @@ export default function Home() {
       num: "01",
       title: content.ecoCard1Title || "Fair wages for caretakers",
       desc: content.ecoCard1Text || "Directly supporting Kashmiri local labor with dignified and fair compensation.",
+      imageSrc: "/images/eco_caretaker_wages.png",
     },
     {
       num: "02",
       title: content.ecoCard2Title || "Organic horticulture",
       desc: content.ecoCard2Text || "Using manure and organic soil enrichment, protecting local cemetery ecosystems.",
+      imageSrc: "/images/eco_organic_soil.png",
     },
     {
       num: "03",
       title: content.ecoCard3Title || "Respectful Appearance",
       desc: content.ecoCard3Text || "Maintaining clean surroundings, preserving the traditional forest cemetery appearance.",
+      imageSrc: "/images/eco_cemetery_heritage.png",
     },
     {
       num: "04",
       title: content.ecoCard4Title || "GPS & Transparent reporting",
       desc: content.ecoCard4Text || "Every session is geo-tagged and detailed before-after photos are stored in reports.",
+      imageSrc: "/images/eco_gps_reporting.png",
     },
   ];
+
+  const counterData = [
+    {
+      value: 150,
+      suffix: "+",
+      label: content.stat1Label || "Graves Maintained",
+      desc: content.stat1Desc || "Across Kashmir",
+    },
+    {
+      value: 98,
+      suffix: "%",
+      label: content.stat2Label || "Family Satisfaction",
+      desc: content.stat2Desc || "Verified reports",
+    },
+    {
+      value: 12,
+      suffix: "+",
+      label: content.stat3Label || "Cemeteries Served",
+      desc: content.stat3Desc || "Srinagar & beyond",
+    },
+    {
+      value: 500,
+      suffix: "+",
+      label: content.stat4Label || "Photo Reports Sent",
+      desc: content.stat4Desc || "To families worldwide",
+    },
+  ];
+
+  // Split title on the first comma to prevent dropping text if there are multiple commas
+  let title1 = "Your Family's Resting Place,";
+  let title2 = "Maintained with Dignity.";
+  if (settings?.hero_title) {
+    const commaIndex = settings.hero_title.indexOf(",");
+    if (commaIndex !== -1) {
+      title1 = settings.hero_title.substring(0, commaIndex + 1);
+      title2 = settings.hero_title.substring(commaIndex + 1).trim();
+    } else {
+      title1 = settings.hero_title;
+      title2 = "";
+    }
+  }
 
   return (
     <>
@@ -71,18 +124,18 @@ export default function Home() {
         />
       </Head>
 
-      {/* Hero Section with Moving Geometric Shapes */}
+      {/* ━━━ Hero Section with Geometric Shapes ━━━ */}
       <section className="relative overflow-hidden">
         <HeroGeometric
-          title1={settings?.hero_title?.includes(',') ? settings.hero_title.split(',')[0] + "," : "Your Family's Resting Place,"}
-          title2={settings?.hero_title?.includes(',') ? settings.hero_title.split(',')[1] : "Maintained with Dignity."}
+          title1={title1}
+          title2={title2}
         />
-        
+
         {/* Intro & Orbital Block */}
         <div className="bg-background py-16 lg:py-24 border-b border-border/40 overflow-hidden">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-              <Reveal delay={0.1}>
+              <ScrollReveal direction="up" delay={0.1}>
                 <div className="space-y-6 text-center lg:text-left">
                   <h2 className="text-3xl sm:text-4xl font-bold font-serif text-foreground">
                     {content.eyebrow || "Grave maintenance done with care and precision."}
@@ -95,7 +148,7 @@ export default function Home() {
                       href={`https://wa.me/${(settings?.whatsapp_number || "917006830501").replace(/[^0-9]/g, '')}?text=${encodeURIComponent(settings?.whatsapp_message || "")}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl transition-all shadow-md hover:-translate-y-0.5"
+                      className="inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl transition-all shadow-md hover:-translate-y-0.5 hover:shadow-lg"
                     >
                       <MessageSquare className="h-4.5 w-4.5 mr-2" /> {content.heroWhatsappButton || "Chat on WhatsApp"}
                     </a>
@@ -107,59 +160,34 @@ export default function Home() {
                     </Link>
                   </div>
                 </div>
-              </Reveal>
-              <Reveal delay={0.3}>
+              </ScrollReveal>
+              <ScrollReveal direction="up" delay={0.3}>
                 <div className="relative flex justify-center w-full">
                   <OrbitalHero />
                 </div>
-              </Reveal>
+              </ScrollReveal>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Services Grid Section */}
-      <section id="services" className="py-20 bg-background border-b border-border/40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary mb-3">
-              <ShieldCheck className="h-3.5 w-3.5 mr-1" /> {content.servicesTag || "Our services"}
-            </span>
-            <h2 className="font-serif text-3xl font-bold text-foreground sm:text-4xl">
-              {content.servicesHeading || "What we do."}
-            </h2>
-            <p className="mt-4 text-muted-foreground text-sm sm:text-base">
-              {content.servicesSubtext || "Every job starts with a WhatsApp message. We confirm details by call before any work begins."}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services.map((srv, idx) => (
-              <Reveal key={idx} delay={idx * 0.1}>
-                <Scroll3DTilt maxTilt={6}>
-                  <div
-                    className="flex flex-col p-6 h-full bg-secondary/40 rounded-2xl border border-border/50 hover:border-primary/30 hover:shadow-md transition-all space-y-4"
-                  >
-                    <div className="text-primary bg-primary/10 w-12 h-12 rounded-xl flex items-center justify-center border border-primary/20 shrink-0">
-                      {srv.icon}
-                    </div>
-                    <div className="space-y-1.5">
-                      <h3 className="text-lg font-bold text-foreground">{srv.title}</h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{srv.desc}</p>
-                    </div>
-                  </div>
-                </Scroll3DTilt>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Interactive Before/After Restoration Demonstration */}
-      <section className="py-20 bg-secondary/30 border-b border-border/40">
+      {/* ━━━ Services — Hover Focus Grid ━━━ */}
+      <HoverFocusGrid
+        tiles={services.map((srv, idx) => ({
+          num: String(idx + 1).padStart(2, "0"),
+          title: srv.title,
+          desc: srv.desc,
+          icon: srv.icon,
+        }))}
+        sectionTag={content.servicesTag || "Our services"}
+        tagIcon={<ShieldCheck className="h-3.5 w-3.5 mr-1" />}
+        sectionTitle={content.servicesHeading || "What we do."}
+        sectionSubtitle={content.servicesSubtext || "Every job starts with a WhatsApp message. We confirm details by call before any work begins."}
+      />
+      <section className="py-20 bg-background border-b border-border/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            <div className="lg:col-span-5 space-y-6">
+            <ScrollReveal direction="left" className="lg:col-span-5 space-y-6">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary">
                 <Sparkles className="h-3 w-3 mr-1.5" /> {content.beforeAfterTag || "High Standards of Restoration"}
               </span>
@@ -167,21 +195,19 @@ export default function Home() {
                 {content.beforeAfterHeading || "See the Care and Detail in Our Work"}
               </h2>
               <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
-                {content.beforeAfterText || "Weathering in Kashmir\u0027s winters can cause marble staining, moss growth, and name engraving decay. Our professional team performs delicate chemical-free cleaning, re-painting of Arabic and Persian calligraphies, and complete landscaping."}
+                {content.beforeAfterText || "Weathering in Kashmir's winters can cause marble staining, moss growth, and name engraving decay. Our professional team performs delicate chemical-free cleaning, re-painting of Arabic and Persian calligraphies, and complete landscaping."}
               </p>
               <div className="space-y-3">
-                <div className="flex items-center space-x-3 text-sm">
-                  <span className="h-5 w-5 bg-primary text-white rounded-full flex items-center justify-center text-xs font-bold">✓</span>
-                  <span className="text-foreground">{content.beforeAfterBullet1 || "Delicate stain removal from premium marble"}</span>
-                </div>
-                <div className="flex items-center space-x-3 text-sm">
-                  <span className="h-5 w-5 bg-primary text-white rounded-full flex items-center justify-center text-xs font-bold">✓</span>
-                  <span className="text-foreground">{content.beforeAfterBullet2 || "Weed extraction & maintaining neat local climate-ready grass"}</span>
-                </div>
-                <div className="flex items-center space-x-3 text-sm">
-                  <span className="h-5 w-5 bg-primary text-white rounded-full flex items-center justify-center text-xs font-bold">✓</span>
-                  <span className="text-foreground">{content.beforeAfterBullet3 || "Calligraphy re-inking (Gold, Black, or White paint)"}</span>
-                </div>
+                {[
+                  content.beforeAfterBullet1 || "Delicate stain removal from premium marble",
+                  content.beforeAfterBullet2 || "Weed extraction & maintaining neat local climate-ready grass",
+                  content.beforeAfterBullet3 || "Calligraphy re-inking (Gold, Black, or White paint)",
+                ].map((bullet, idx) => (
+                  <div key={idx} className="flex items-center space-x-3 text-sm">
+                    <span className="h-5 w-5 bg-primary text-white rounded-full flex items-center justify-center text-xs font-bold">✓</span>
+                    <span className="text-foreground">{bullet}</span>
+                  </div>
+                ))}
               </div>
               <div className="pt-2">
                 <Link
@@ -192,12 +218,12 @@ export default function Home() {
                   <ArrowRight className="h-4 w-4 ml-1.5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </div>
-            </div>
+            </ScrollReveal>
 
-            <div className="lg:col-span-7">
+            <ScrollReveal direction="right" delay={0.2} className="lg:col-span-7">
               <Scroll3DTilt maxTilt={8}>
                 <div className="bg-background p-4 rounded-3xl border border-border shadow-sm">
-                  <ImageBeforeAfter 
+                  <ImageBeforeAfter
                     beforeImage="/images/grave-before-final.jpg"
                     afterImage="/images/grave-after-final.jpg"
                     beforeLabel={content.sliderBeforeLabel}
@@ -205,93 +231,49 @@ export default function Home() {
                   />
                 </div>
               </Scroll3DTilt>
-            </div>
+            </ScrollReveal>
           </div>
         </div>
       </section>
 
-      {/* How it Works Section */}
-      <section id="process" className="py-20 bg-background border-b border-border/40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary mb-3">
-              <Calendar className="h-3.5 w-3.5 mr-1" /> {content.processTag || "Process"}
-            </span>
-            <h2 className="font-serif text-3xl font-bold sm:text-4xl text-foreground">
-              {content.howItWorksHeading || "Our Journey of Care"}
-            </h2>
-            <p className="mt-4 text-muted-foreground max-w-2xl text-lg">
-              {content.howItWorksSub || "We handle every request as if we were caring for our own family."}
-            </p>
-          </div>
+      {/* ━━━ How it Works — SVG Path Timeline ━━━ */}
+      <SVGPathTimeline
+        nodes={steps}
+        sectionTag={content.processTag || "Process"}
+        tagIcon={<Calendar className="h-3.5 w-3.5 mr-1" />}
+        sectionTitle={content.howItWorksHeading || "Our Journey of Care"}
+        sectionSubtitle={content.howItWorksSub || "We handle every request as if we were caring for our own family."}
+      />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {steps.map((step, idx) => (
-              <Reveal key={idx} delay={idx * 0.15}>
-                <div className="relative text-center p-6 h-full border border-border/40 rounded-2xl bg-secondary/20 hover:bg-secondary/40 transition-colors">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary text-primary-foreground font-bold text-xl mb-6 shadow-md">
-                    {step.num}
-                  </div>
-                  <h3 className="text-lg font-bold text-foreground mb-3">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ━━━ Animated Stats Counters ━━━ */}
+      <AnimatedCounters
+        counters={counterData}
+        sectionTag={content.statsTag || "Our Impact"}
+        tagIcon={<Star className="h-3.5 w-3.5 mr-1" />}
+        sectionTitle={content.statsHeading || "Trusted by Families Worldwide"}
+        sectionSubtitle={content.statsSubtitle || "Numbers that reflect our commitment to dignified care and transparency."}
+      />
 
-      {/* Botanical & Fair Wage Values Section */}
-      <section className="py-20 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-primary/5 rounded-3xl p-8 md:p-12 border border-primary/10 overflow-hidden relative">
-            <div className="absolute right-0 top-0 translate-x-24 -translate-y-24 w-96 h-96 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-              <div className="space-y-5">
-                <div className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-primary/20 text-primary">
-                  <Leaf className="h-3.5 w-3.5 mr-1" /> {content.ecoTag || "Eco-Conscious & Ethical Custodianship"}
-                </div>
-                <h2 className="font-serif text-2xl font-bold text-foreground md:text-3xl">
-                  {content.ecoHeading || "Our Eco-Ethical Preservation Policy"}
-                </h2>
-                <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
-                  {content.ecoText1 || "We believe in respecting both the memory of the deceased and the pristine environment of Kashmir. We never use harsh chemical weedkillers that harm local soils and water tables."}
-                </p>
-                <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
-                  {content.ecoText2 || "Instead, we employ local Kashmiri caretakers and gardeners, providing them with a fair, family-supporting wage. We prioritize keeping the grave clean and well-maintained while respecting the local graveyard aesthetics."}
-                </p>
-                <div className="pt-2">
-                  <Link
-                    href="/about"
-                    className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/95 rounded-xl transition-colors shadow-sm"
-                  >
-                    {content.ecoLearnMore || "Learn about our values"}
-                  </Link>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {ecoCards.map((card) => (
-                  <div key={card.num} className="p-5 bg-background rounded-2xl border border-border/85 shadow-xs space-y-2">
-                    <div className="text-primary text-xl font-serif">{card.num} /</div>
-                    <h4 className="font-semibold text-sm">{card.title}</h4>
-                    <p className="text-[11px] text-muted-foreground">{card.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-
-      {/* Call to Action CTA */}
+      {/* ━━━ Eco Values — Horizontal Scroll Slider ━━━ */}
+      <HorizontalScrollSlider
+        slides={ecoCards.map((card) => ({
+          num: card.num,
+          title: card.title,
+          desc: card.desc,
+          imageSrc: card.imageSrc,
+        }))}
+        sectionTag={content.ecoTag || "Eco-Conscious & Ethical Custodianship"}
+        tagIcon={<Leaf className="h-3.5 w-3.5 mr-1" />}
+        sectionTitle={content.ecoHeading || "Our Eco-Ethical Preservation Policy"}
+      />
       <section className="relative py-24 bg-primary text-primary-foreground overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-white/5 blur-3xl pointer-events-none" />
+        {/* Animated decorative rings */}
+        <div className="absolute top-10 right-10 w-40 h-40 rounded-full border border-white/10 animate-spinSlow pointer-events-none" />
+        <div className="absolute bottom-10 left-10 w-60 h-60 rounded-full border border-white/5 animate-spinSlow pointer-events-none" style={{ animationDirection: "reverse" }} />
 
-        <Reveal>
+        <ScrollReveal direction="up">
           <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
             <h2 className="font-serif text-3xl font-bold sm:text-5xl tracking-tight leading-tight">
               {settings?.cta_title || "Let us care for their resting place."}
@@ -320,7 +302,7 @@ export default function Home() {
               <span>{content.ctaFooterNote || "Dedicated customer support and photo reports with every service session"}</span>
             </div>
           </div>
-        </Reveal>
+        </ScrollReveal>
       </section>
     </>
   );

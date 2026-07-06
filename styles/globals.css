@@ -2,18 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom styles */
+/* ═══════════════════════════════════════════════════════
+   DESIGN SYSTEM — Grave Care Kashmir
+   Inspired by futureoffinance.peachweb.io + myweblab.it
+   ═══════════════════════════════════════════════════════ */
+
 @layer base {
   :root {
-    --background: 0 0% 100%; /* clean white */
-    --foreground: 220 20% 12%; /* near-black with blue undertone */
-    --primary: 160 45% 22%; /* Deep Forest Green #1E5C45 */
-    --primary-foreground: 0 0% 100%; /* white */
-    --secondary: 45 20% 95%; /* warm off-white */
+    --background: 0 0% 100%;
+    --foreground: 220 20% 12%;
+    --primary: 160 45% 22%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 45 20% 95%;
     --secondary-foreground: 160 45% 22%;
     --muted: 45 10% 94%;
     --muted-foreground: 220 10% 46%;
-    --accent: 36 72% 44%; /* Warm Amber #C2841A */
+    --accent: 36 72% 44%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -41,16 +45,201 @@
   }
 }
 
-.font-urdu {
-  font-family: 'Noto Nastaliq Urdu', serif;
-  line-height: 2.2;
-}
-
+/* ─── Global resets ─── */
 @layer base {
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
   }
+  html, html.scroll-smooth {
+    scroll-behavior: auto !important;
+  }
+}
+
+.font-urdu {
+  font-family: 'Noto Nastaliq Urdu', serif;
+  line-height: 2.2;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ANIMATION KEYFRAMES
+   ═══════════════════════════════════════════════════════ */
+
+/* Fade in from bottom */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Fade in simple */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Pulse glow ring */
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.3); }
+  50% { box-shadow: 0 0 0 12px hsl(var(--primary) / 0); }
+}
+
+/* Float animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+/* Slide in from left */
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Slide in from right */
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Scale in */
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Gradient shift */
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Monumental text scroll */
+@keyframes scrollText {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Spin slow */
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   UTILITY CLASSES
+   ═══════════════════════════════════════════════════════ */
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-pulseGlow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-gradientShift {
+  background-size: 200% 200%;
+  animation: gradientShift 6s ease infinite;
+}
+
+.animate-scrollText {
+  animation: scrollText 20s linear infinite;
+}
+
+.animate-spinSlow {
+  animation: spinSlow 20s linear infinite;
+}
+
+/* ─── Glassmorphism card ─── */
+.glass-card {
+  background: hsl(var(--background) / 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid hsl(var(--border) / 0.5);
+}
+
+.dark .glass-card {
+  background: hsl(var(--background) / 0.5);
+  border: 1px solid hsl(var(--border) / 0.3);
+}
+
+/* ─── Monumental footer text ─── */
+.monumental-text {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(3rem, 10vw, 8rem);
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  color: hsl(var(--foreground) / 0.04);
+  user-select: none;
+  pointer-events: none;
+}
+
+.dark .monumental-text {
+  color: hsl(var(--foreground) / 0.06);
+}
+
+/* ─── Section transitions ─── */
+.section-fade-in {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.section-fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─── Premium card hover ─── */
+.premium-card {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.premium-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 60px -12px hsl(var(--primary) / 0.15);
+}
+
+/* ─── Gradient text ─── */
+.gradient-text {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Custom scrollbar ─── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* ─── Selection color ─── */
+::selection {
+  background: hsl(var(--primary) / 0.2);
+  color: hsl(var(--primary));
 }

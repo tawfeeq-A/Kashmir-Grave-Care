@@ -1,8 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ParticleCanvas from "@/components/ParticleCanvas";
+import WobblySphereCanvas from "@/components/WobblySphereCanvas";
 
 function ElegantShape({
     className,
@@ -91,9 +92,25 @@ function HeroGeometric({
 
     return (
         <div className="relative min-h-[90vh] w-full flex items-center justify-center overflow-hidden bg-[#0A1F16]">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#1E5C45]/[0.12] via-transparent to-[#C2841A]/[0.08] blur-3xl" />
+            {/* Background Animations — Future of Finance inspired */}
+            <div className="absolute inset-0 z-0 opacity-60">
+                <WobblySphereCanvas
+                    sphereColor="30, 92, 69" // Emerald Green
+                    accentColor="194, 132, 26" // Warm Amber
+                />
+                <ParticleCanvas
+                    particleCount={50}
+                    colors={[
+                        "rgba(30,92,69,",
+                        "rgba(194,132,26,",
+                        "rgba(255,255,255,",
+                    ]}
+                />
+            </div>
 
-            <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#1E5C45]/[0.12] via-transparent to-[#C2841A]/[0.08] blur-3xl z-[1]" />
+
+            <div className="absolute inset-0 overflow-hidden z-[2]">
                 <ElegantShape
                     delay={0.3}
                     width={600}
@@ -188,7 +205,7 @@ function HeroGeometric({
                 </div>
             </div>
 
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0A1F16] via-transparent to-[#0A1F16]/80 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0A1F16] via-transparent to-[#0A1F16]/80 pointer-events-none z-[3]" />
         </div>
     );
 }
