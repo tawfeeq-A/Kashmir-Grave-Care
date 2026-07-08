@@ -75,7 +75,7 @@ export default function Services() {
         />
       </Head>
 
-      <div className="bg-background/80 backdrop-blur-md pt-28 pb-20">
+      <div className="bg-background/95 md:bg-background/80 md:backdrop-blur-md pt-28 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <ScrollReveal direction="up">

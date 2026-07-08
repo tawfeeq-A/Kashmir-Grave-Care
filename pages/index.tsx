@@ -112,22 +112,22 @@ export default function Home() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           EMOTIONAL INTRO — Split layout with image
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="relative bg-background/80 backdrop-blur-md overflow-hidden">
+      <section className="relative bg-background/95 md:bg-background/80 md:backdrop-blur-md overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-32">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             {/* Left — Image with layered depth */}
             <ScrollReveal direction="up" delay={0.1}>
-              <div className="relative">
+              <div className="relative w-full max-w-sm sm:max-w-md mx-auto lg:mx-0">
                 {/* Decorative accent behind image */}
                 <div className="absolute -inset-4 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 rounded-[2.5rem] blur-2xl" />
-                <div className="relative aspect-[4/3] sm:aspect-[4/5] w-full max-w-sm sm:max-w-md mx-auto lg:mx-0 overflow-hidden rounded-2xl sm:rounded-[2rem] border border-border/60 shadow-2xl shadow-primary/5">
+                <div className="relative aspect-[4/3] sm:aspect-[4/5] w-full overflow-hidden rounded-2xl sm:rounded-[2rem] border border-border/60 shadow-2xl shadow-primary/5">
                   <Image
                     src="/images/kashmir-cemetery.png"
                     alt="Kashmir cemetery with white marble graves under Chinar trees"
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 50vw"
-                    priority
+                    loading="lazy"
                   />
                   {/* Gradient overlay for depth */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
@@ -201,7 +201,7 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 items-stretch">
             {services.map((srv, idx) => (
               <ScrollReveal key={idx} direction="up" delay={idx * 0.1}>
-                <div className="premium-card group relative rounded-2xl border border-border/60 p-6 sm:p-8 transition-all duration-500 hover:border-primary/30 h-full bg-background/70 backdrop-blur-md">
+                <div className="premium-card group relative rounded-2xl border border-border/60 p-6 sm:p-8 transition-all duration-500 hover:border-primary/30 h-full bg-background/90 md:bg-background/70 md:backdrop-blur-md">
                   {/* Icon */}
                   <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center bg-primary/10 text-primary border border-primary/15 mb-5 sm:mb-6 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110 transition-all duration-500">
                     {srv.icon}
@@ -236,7 +236,7 @@ export default function Home() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           BEFORE / AFTER — Visual proof
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="py-16 sm:py-24 lg:py-32 bg-background/80 backdrop-blur-md">
+      <section className="py-16 sm:py-24 lg:py-32 bg-background/95 md:bg-background/80 md:backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-20 items-center">
             <ScrollReveal direction="up" className="lg:col-span-5 space-y-5 sm:space-y-7">

@@ -441,6 +441,20 @@ Build clean (263 KB First Load JS). Committed + pushed to `main`. (Vercel auto-d
 - **Removed stale local directories**: `src/` (empty, never tracked), `scripts/` (empty), `tsconfig.tsbuildinfo` (generated artifact).
 - **brain.md refreshed**: project structure updated to reflect current reality (all deletions, correct paths for docs/icons/manifest/sw.js/vercel.json).
 
+### 2026-07-09 — Hero → Intro Mobile UX & Perf Pass (desktop untouched)
+
+Root cause of the reported mobile "screen jump / next-screen enlarges" between the hero and intro sections was a combination of a hydration-gated reveal, priority image, and per-frame GPU compositing over the live canvas. Seven fixes, all mobile-scoped (`sm:`/`md:` guards keep desktop identical):
+
+1. **`MaskReveal.tsx`** — rewrote to a pure passthrough (`return <>{children}</>`). The old `opacity-0` hydration gate caused a blank flash + reparent reflow on first paint. The component no longer runs a mask animation (the gate only caused harm).
+2. **Intro image (`index.tsx`)** — `priority` → `loading="lazy"`. It sits below the fold, so `priority` was competing with the true LCP and hurting it.
+3. **`ParticleCanvas.tsx`** — mobile detection via `isMobileRef` (`window.innerWidth < 768` on mount). On mobile: particle cap 55 → 22, skip the soft-glow arc, and skip the O(n²) connection-line loop. Keeps subtle ambiance without the per-frame cost.
+4. **backdrop-blur on mobile** — full-viewport section blurs re-composite every frame over the repainting canvas. Hero floating shapes → `md:backdrop-blur-[2px]` (no blur on mobile). All full-viewport section wrappers → `bg-background/95 md:bg-background/80 md:backdrop-blur-md` (near-solid, no blur on mobile; translucent + blur unchanged at `md+`). Applied to `index.tsx` (intro, before/after, service cards `/90`), `AnimatedCounters.tsx`, `SVGPathTimeline.tsx`, and the `about`/`services`/`work`/`contact` page wrappers.
+5. **Dead imports** — removed unused `ParticleCanvas` + `WobblySphereCanvas` imports from `components/ui/shape-landing-hero.tsx`.
+6. **Hero vertical clipping (short screens)** — hero wrapper `overflow-hidden` → `overflow-x-clip` (hides horizontal shape overflow without clipping vertical content), and `pt-16 sm:pt-0` → `pt-24 pb-12 sm:pt-0 sm:pb-0` so content clears the navbar and isn't cropped top/bottom on short viewports.
+7. **Floating stat card overlap (`index.tsx`)** — root cause: the `.relative` wrapper was full column width while the image was `max-w-sm mx-auto` (centered/narrower), so the `-bottom-4 right-2` card anchored to the column edge, detached from the image on mobile. Moved `max-w-sm sm:max-w-md mx-auto lg:mx-0` up to the wrapper; image container is now plain `w-full`. Card now anchors to the image edge on all screens.
+
+Verified: `npx tsc --noEmit` clean; `npm run build` clean (7 static pages, homepage 272 KB First Load JS). Desktop layout/behavior unchanged.
+
 ---
 
 ## 🚀 Deployment Checklist (before go-live)

@@ -52,7 +52,7 @@ export default function About() {
         />
       </Head>
 
-      <div className="bg-background/80 backdrop-blur-md pt-28 pb-20">
+      <div className="bg-background/95 md:bg-background/80 md:backdrop-blur-md pt-28 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Main Story Hero */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-24">

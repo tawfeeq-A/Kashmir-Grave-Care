@@ -177,7 +177,7 @@ export default function Contact() {
         />
       </Head>
 
-      <div className="bg-background/80 backdrop-blur-md pt-28 pb-20 min-h-screen flex flex-col justify-center relative overflow-hidden">
+      <div className="bg-background/95 md:bg-background/80 md:backdrop-blur-md pt-28 pb-20 min-h-screen flex flex-col justify-center relative overflow-hidden">
         {/* Decorative background elements */}
         <div className="absolute top-20 right-0 w-96 h-96 rounded-full bg-primary/5 blur-3xl pointer-events-none" />
         <div className="absolute bottom-20 left-0 w-80 h-80 rounded-full bg-accent/5 blur-3xl pointer-events-none" />

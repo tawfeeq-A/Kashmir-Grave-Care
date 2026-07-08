@@ -1,17 +1,6 @@
-import { useEffect, useState } from "react";
-
 export default function MaskReveal({ children }: { children: React.ReactNode }) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    // Keep consistent server/client DOM node hierarchy for hydration safety
-    return <div className="opacity-0">{children}</div>;
-  }
-
+  // Render immediately — no opacity gate. Gating the whole page behind
+  // opacity-0 until hydration caused a blank flash on slow mobile connections
+  // and a reparent reflow when the wrapper switched from <div> to fragment.
   return <>{children}</>;
 }
-

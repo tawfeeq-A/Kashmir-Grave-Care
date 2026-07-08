@@ -91,7 +91,7 @@ export default function AnimatedCounters({
   }, [counters]);
 
   return (
-    <section ref={sectionRef} className="py-14 sm:py-20 bg-background/80 backdrop-blur-md border-b border-border/40">
+    <section ref={sectionRef} className="py-14 sm:py-20 bg-background/95 md:bg-background/80 md:backdrop-blur-md border-b border-border/40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         {(sectionTitle || sectionTag) && (

@@ -2,8 +2,6 @@
 
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import ParticleCanvas from "@/components/ParticleCanvas";
-import WobblySphereCanvas from "@/components/WobblySphereCanvas";
 
 function ElegantShape({
     className,
@@ -60,7 +58,7 @@ function ElegantShape({
                         "absolute inset-0 rounded-full",
                         "bg-gradient-to-r to-transparent",
                         gradient,
-                        "backdrop-blur-[2px] border-2 border-foreground/[0.08] dark:border-white/[0.15] shadow-[0_8px_32px_0_rgba(0,0,0,0.03)] dark:shadow-[0_8px_32px_0_rgba(255,255,255,0.05)]",
+        "md:backdrop-blur-[2px] border-2 border-foreground/[0.08] dark:border-white/[0.15] shadow-[0_8px_32px_0_rgba(0,0,0,0.03)] dark:shadow-[0_8px_32px_0_rgba(255,255,255,0.05)]",
                         "after:absolute after:inset-0 after:rounded-full",
                         "after:bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_70%)]"
                     )}
@@ -91,7 +89,7 @@ function HeroGeometric({
     };
 
     return (
-        <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-transparent pt-16 sm:pt-0">
+        <div className="relative min-h-screen w-full flex items-center justify-center overflow-x-clip bg-transparent pt-24 pb-12 sm:pt-0 sm:pb-0">
             {/* Background Animations moved page-wide to index.tsx */}
 
             <div className="absolute inset-0 bg-gradient-to-br from-[#1E5C45]/[0.12] via-transparent to-[#C2841A]/[0.08] blur-3xl z-[1] pointer-events-none" />

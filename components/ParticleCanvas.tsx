@@ -26,11 +26,15 @@ export default function ParticleCanvas({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const animationRef = useRef<number>(0);
+  const isMobileRef = useRef(false);
 
   const initParticles = useCallback(
     (width: number, height: number) => {
+      // On mobile, cap the particle count hard to keep the main thread free
+      // for smooth scrolling (the connection loop below is O(n²)).
+      const count = isMobileRef.current ? Math.min(particleCount, 22) : particleCount;
       const particles: Particle[] = [];
-      for (let i = 0; i < particleCount; i++) {
+      for (let i = 0; i < count; i++) {
         const colorBase = colors[Math.floor(Math.random() * colors.length)];
         particles.push({
           x: Math.random() * width,
@@ -60,6 +64,8 @@ export default function ParticleCanvas({
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
+    isMobileRef.current = window.innerWidth < 768;
 
     const handleResize = () => {
       const parent = canvas.parentElement;
@@ -130,26 +136,31 @@ export default function ParticleCanvas({
         ctx.fillStyle = `${baseColor}${finalOpacity})`;
         ctx.fill();
 
-        // Soft glow
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
-        ctx.fillStyle = `${baseColor}${finalOpacity * 0.15})`;
-        ctx.fill();
+        // Soft glow — skip on mobile (extra fill per particle every frame)
+        if (!isMobileRef.current) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+          ctx.fillStyle = `${baseColor}${finalOpacity * 0.15})`;
+          ctx.fill();
+        }
 
-        // Draw connections between nearby particles
-        for (let j = i + 1; j < particlesRef.current.length; j++) {
-          const p2 = particlesRef.current[j];
-          const dx = p.x - p2.x;
-          const dy = p.y - p2.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
+        // Connection lines are O(n²) — desktop only. On mobile this keeps the
+        // main thread free so Lenis smooth-scroll frames don't drop.
+        if (!isMobileRef.current) {
+          for (let j = i + 1; j < particlesRef.current.length; j++) {
+            const p2 = particlesRef.current[j];
+            const dx = p.x - p2.x;
+            const dy = p.y - p2.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
 
-          if (dist < 120) {
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.strokeStyle = `${baseColor}${(1 - dist / 120) * 0.08})`;
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
+            if (dist < 120) {
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.strokeStyle = `${baseColor}${(1 - dist / 120) * 0.08})`;
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
           }
         }
       });
