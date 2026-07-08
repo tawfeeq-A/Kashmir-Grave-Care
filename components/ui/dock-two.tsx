@@ -7,7 +7,7 @@ import { LucideIcon, Menu } from "lucide-react"
 interface DockItem {
   icon: LucideIcon
   label: string
-  onClick?: () => void
+  onClick?: (e?: React.MouseEvent) => void
   href?: string
   active?: boolean
   accent?: boolean
@@ -65,7 +65,7 @@ function DockIconButton({
   )
 
   const classes = cn(
-    "relative group p-2 rounded-lg transition-colors duration-150",
+    "relative group p-2.5 rounded-lg transition-colors duration-150",
     accent
       ? "hover:bg-[#25d366]/10"
       : active
@@ -183,11 +183,13 @@ const Dock = React.forwardRef<HTMLDivElement, VerticalDockProps>(
     const navItems = items.filter((item) => !item.accent)
     const accentItems = items.filter((item) => item.accent)
 
-    // On touch, selecting a nav item collapses the dock after navigation
+    // On touch, selecting a nav item collapses the dock after navigation.
+    // Forward the event so router-based onClick handlers can preventDefault
+    // (avoids the <a href> triggering a full page reload).
     const wrapItem = (item: DockItem): DockItem => ({
       ...item,
-      onClick: () => {
-        item.onClick?.()
+      onClick: (e?: React.MouseEvent) => {
+        item.onClick?.(e)
         if (!hasHover) setIsExpanded(false)
       },
     })
@@ -240,14 +242,14 @@ const Dock = React.forwardRef<HTMLDivElement, VerticalDockProps>(
               transition={{ duration: 0.15 }}
               onClick={() => setIsExpanded(true)}
               className={cn(
-                "p-2.5 rounded-xl transition-colors",
+                "p-3 rounded-xl transition-colors",
                 overDark
                   ? "text-white/90 hover:text-white"
                   : "text-foreground/80 hover:text-foreground dark:text-foreground/90"
               )}
-              aria-label="Open navigation"
+              aria-label="Open navigation menu"
             >
-              <Menu className="w-4 h-4" />
+              <Menu className="w-5 h-5" />
             </motion.button>
           )}
         </AnimatePresence>

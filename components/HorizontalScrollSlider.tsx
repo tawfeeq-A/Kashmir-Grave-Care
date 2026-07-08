@@ -41,29 +41,33 @@ export default function HorizontalScrollSlider({
       return;
     }
 
-    const ctx = gsap.context(() => {
-      const getDistance = () => Math.max(0, track.scrollWidth - window.innerWidth);
+    const getDistance = () => Math.max(0, track.scrollWidth - window.innerWidth);
+    const lastIndex = Math.max(1, slides.length - 1);
 
-      const lastIndex = Math.max(1, slides.length - 1);
-
+    // Shared pinned horizontal-scroll config. `withSnap` = per-frame settle.
+    const buildTween = (withSnap: boolean) =>
       gsap.to(track, {
         x: () => -getDistance(),
         ease: "none",
         scrollTrigger: {
           trigger: section,
-          start: "top top",
+          start: "top top", // pin exactly when the green tag (section top) reaches the top
           end: () => "+=" + getDistance(),
           pin: true,
+          pinSpacing: true,
           scrub: 1,
           anticipatePin: 1,
           invalidateOnRefresh: true,
-          // Settle on whole panels so a single slide fills the frame (no half-panels)
-          snap: {
-            snapTo: 1 / lastIndex,
-            duration: { min: 0.2, max: 0.5 },
-            delay: 0.06,
-            ease: "power1.inOut",
-          },
+          ...(withSnap
+            ? {
+                snap: {
+                  snapTo: 1 / lastIndex,
+                  duration: { min: 0.2, max: 0.5 },
+                  delay: 0.06,
+                  ease: "power1.inOut",
+                },
+              }
+            : {}),
           onUpdate: (self) => {
             const idx = Math.round(self.progress * lastIndex);
             setActiveIndex((prev) => (prev === idx ? prev : idx));
@@ -71,27 +75,36 @@ export default function HorizontalScrollSlider({
         },
       });
 
-      const imgs = Array.from(track.querySelectorAll("img"));
-      imgs.forEach((img) => {
-        if (!img.complete) {
-          img.addEventListener("load", () => ScrollTrigger.refresh(), { once: true });
-        }
-      });
+    // Responsive: per-frame SNAP only on phones; smooth continuous scrub on
+    // tablet / laptop / desktop. matchMedia auto-rebuilds + cleans up on resize.
+    const mm = gsap.matchMedia();
+    mm.add("(max-width: 767px)", () => {
+      buildTween(true);
+    });
+    mm.add("(min-width: 768px)", () => {
+      buildTween(false);
+    });
 
-      requestAnimationFrame(() => ScrollTrigger.refresh());
-    }, section);
+    // Recalculate pin length once images finish loading (affects measurements)
+    const imgs = Array.from(track.querySelectorAll("img"));
+    imgs.forEach((img) => {
+      if (!img.complete) {
+        img.addEventListener("load", () => ScrollTrigger.refresh(), { once: true });
+      }
+    });
+    requestAnimationFrame(() => ScrollTrigger.refresh());
 
-    return () => ctx.revert();
+    return () => mm.revert();
   }, [slides.length]);
 
   const Panel = (slide: SlideData, idx: number, active: boolean) => (
-    <div className="max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6 lg:gap-10 items-center">
+    <div className="max-w-5xl lg:max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-8 lg:gap-20 items-center">
       {/* Number + Title inline + Description */}
-      <div className="space-y-1.5 sm:space-y-3 lg:space-y-5 order-2 md:order-1 text-center md:text-left">
+      <div className="space-y-1.5 sm:space-y-4 lg:space-y-7 order-2 md:order-1 text-center md:text-left">
         {/* Number and title on same line */}
-        <div className="flex items-baseline justify-center md:justify-start gap-2 sm:gap-3">
+        <div className="flex items-baseline justify-center md:justify-start gap-2 sm:gap-3 lg:gap-5">
           <span
-            className="font-serif text-[24px] sm:text-[48px] lg:text-[100px] leading-none font-bold bg-clip-text text-transparent select-none shrink-0"
+            className="font-serif text-[24px] sm:text-[48px] lg:text-[128px] leading-none font-bold bg-clip-text text-transparent select-none shrink-0"
             style={{
               WebkitTextStroke: "1.5px hsl(var(--primary) / 0.25)",
               backgroundImage: active
@@ -101,18 +114,18 @@ export default function HorizontalScrollSlider({
           >
             {slide.num}
           </span>
-          <h3 className="text-sm sm:text-lg lg:text-2xl font-bold text-foreground font-serif">
+          <h3 className="text-sm sm:text-lg lg:text-3xl xl:text-4xl font-bold text-foreground font-serif leading-tight">
             {slide.title}
           </h3>
         </div>
-        <p className="text-muted-foreground leading-relaxed text-[11px] sm:text-xs lg:text-base max-w-sm mx-auto md:mx-0">
+        <p className="text-muted-foreground leading-relaxed text-[11px] sm:text-sm lg:text-lg max-w-sm lg:max-w-md mx-auto md:mx-0">
           {slide.desc}
         </p>
       </div>
       {/* Image */}
-      <div className="flex justify-center items-center order-1 md:order-2">
+      <div className="flex justify-center md:justify-end items-center order-1 md:order-2">
         {slide.imageSrc ? (
-          <div className="w-full max-w-[240px] sm:max-w-[280px] lg:max-w-[360px] aspect-[4/5] sm:aspect-square rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-border/70 bg-secondary relative group">
+          <div className="w-full max-w-[240px] sm:max-w-[300px] lg:max-w-[460px] aspect-[4/5] sm:aspect-square rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl border border-border/70 bg-secondary relative group">
             <img
               src={slide.imageSrc}
               alt={slide.title}
@@ -122,8 +135,8 @@ export default function HorizontalScrollSlider({
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
           </div>
         ) : (
-          <div className="w-32 h-32 sm:w-48 sm:h-48 lg:w-64 lg:h-64 rounded-full bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 border border-primary/10 flex items-center justify-center">
-            <span className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-primary/20">
+          <div className="w-32 h-32 sm:w-48 sm:h-48 lg:w-72 lg:h-72 rounded-full bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 border border-primary/10 flex items-center justify-center">
+            <span className="font-serif text-4xl sm:text-5xl lg:text-7xl font-bold text-primary/20">
               {slide.num}
             </span>
           </div>

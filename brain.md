@@ -421,3 +421,18 @@ Hero → Emotional Intro → Services (bento) → Before/After → Process Timel
 - **`vercel.json`** added with `git.deploymentEnabled: false` → **disables automatic Git deploys**. Deploys are now manual only (Vercel CLI `vercel --prod` or the dashboard "Deploy" button).
 - Repo: `main` branch, remote `github.com/tawfeeq-A/Kashmir-Grave-Care` (project = repo root).
 - `.env.local` is gitignored (no secrets committed). `.kiro/` steering left untracked.
+
+### 2026-07-08 — Mobile Dock Fix, Responsive Eco Snap, Laptop Tile Layout
+
+#### Dock / mobile hamburger (`components/ui/dock-two.tsx`):
+- **Fixed tap-to-navigate bug**: nav items are `<a href>` + `onClick`, but `wrapItem` was calling the item's `onClick` **without the event**, so `e.preventDefault()` never ran → every tap did a full page reload instead of SPA nav. Now the event is forwarded (`DockItem.onClick: (e?) => void`; `wrapItem` passes `e`).
+- Larger touch targets: expanded icons `p-2` → `p-2.5`; collapsed burger `p-2.5`+`w-4` → `p-3`+`w-5 h-5`; clearer `aria-label`.
+
+#### Eco `HorizontalScrollSlider` — responsive pin/snap (`gsap.matchMedia`):
+- **Per-frame SNAP now only on phones** (`max-width: 767px`). Tablet/laptop/desktop (`min-width: 768px`) use **smooth continuous scrub, no snap**.
+- Pinning is consistent on all breakpoints (`start:"top top"`, `pin`, `pinSpacing`, `anticipatePin`, `scrub:1`) → pins exactly when the green tag (section top) reaches the top; matchMedia auto-rebuilds + cleans up on resize (no jumps/flicker).
+
+#### Laptop tile layout (task 4):
+- Panel widened `lg:max-w-6xl`, gap `lg:gap-20`, number `lg:text-[128px]`, title `lg:text-3xl xl:text-4xl`, desc `lg:text-lg lg:max-w-md`, image `lg:max-w-[460px]`, image aligned `md:justify-end` — fills horizontal space, less empty margin.
+
+Build clean (263 KB First Load JS). Committed + pushed to `main`. (Vercel auto-deploy remains disabled via vercel.json.)
