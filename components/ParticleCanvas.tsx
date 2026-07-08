@@ -26,7 +26,6 @@ export default function ParticleCanvas({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const animationRef = useRef<number>(0);
-  const mouseRef = useRef({ x: 0, y: 0 });
 
   const initParticles = useCallback(
     (width: number, height: number) => {
@@ -54,6 +53,11 @@ export default function ParticleCanvas({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    // Respect reduced-motion: skip the animation entirely
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -70,15 +74,33 @@ export default function ParticleCanvas({
     handleResize();
     window.addEventListener("resize", handleResize);
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      mouseRef.current.x = e.clientX - rect.left;
-      mouseRef.current.y = e.clientY - rect.top;
+    // Cache theme state to prevent DOM class queries in the 60fps loop
+    let isDarkLocal = false;
+    const checkTheme = () => {
+      isDarkLocal = document.documentElement.classList.contains("dark");
     };
-    canvas.addEventListener("mousemove", handleMouseMove);
+    checkTheme();
+
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    // Pause rAF loop when the tab is hidden to save battery/CPU
+    let paused = document.hidden;
+    const handleVisibility = () => {
+      const wasPaused = paused;
+      paused = document.hidden;
+      if (wasPaused && !paused) {
+        animationRef.current = requestAnimationFrame(animate);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
 
     const animate = () => {
       if (!ctx || !canvas) return;
+      if (paused) return; // stop scheduling while hidden
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       particlesRef.current.forEach((p, i) => {
@@ -98,15 +120,20 @@ export default function ParticleCanvas({
         const finalOpacity = Math.max(0.05, Math.min(0.6, pulseOpacity));
 
         // Draw particle with glow
+        let baseColor = p.color;
+        if (baseColor.includes("255,255,255") || baseColor.includes("10,31,22")) {
+          baseColor = isDarkLocal ? "rgba(255,255,255," : "rgba(10,31,22,";
+        }
+
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `${p.color}${finalOpacity})`;
+        ctx.fillStyle = `${baseColor}${finalOpacity})`;
         ctx.fill();
 
         // Soft glow
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
-        ctx.fillStyle = `${p.color}${finalOpacity * 0.15})`;
+        ctx.fillStyle = `${baseColor}${finalOpacity * 0.15})`;
         ctx.fill();
 
         // Draw connections between nearby particles
@@ -120,7 +147,7 @@ export default function ParticleCanvas({
             ctx.beginPath();
             ctx.moveTo(p.x, p.y);
             ctx.lineTo(p2.x, p2.y);
-            ctx.strokeStyle = `${p.color}${(1 - dist / 120) * 0.08})`;
+            ctx.strokeStyle = `${baseColor}${(1 - dist / 120) * 0.08})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
@@ -134,15 +161,16 @@ export default function ParticleCanvas({
 
     return () => {
       cancelAnimationFrame(animationRef.current);
+      observer.disconnect();
       window.removeEventListener("resize", handleResize);
-      canvas.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [initParticles]);
 
   return (
     <canvas
       ref={canvasRef}
-      className={`absolute inset-0 pointer-events-auto ${className}`}
+      className={`absolute inset-0 pointer-events-none ${className}`}
       style={{ width: "100%", height: "100%" }}
     />
   );

@@ -75,7 +75,7 @@ export default function Services() {
         />
       </Head>
 
-      <div className="bg-background pt-28 pb-20">
+      <div className="bg-background/80 backdrop-blur-md pt-28 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <ScrollReveal direction="up">
@@ -116,7 +116,7 @@ export default function Services() {
                       <p className="text-xs text-primary font-medium mt-1 uppercase tracking-wide">
                         {pkg.tagline}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
+                      <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
                         {pkg.description}
                       </p>
                     </div>
@@ -136,10 +136,10 @@ export default function Services() {
                       href={`https://wa.me/${(settings?.whatsapp_number || "917006830501").replace(/[^0-9]/g, '')}?text=${encodeURIComponent(settings?.whatsapp_message || "")}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`flex w-full items-center justify-center px-4 py-3 text-sm font-semibold rounded-xl transition-all ${
+                      className={`flex w-full items-center justify-center px-4 py-3 text-sm font-semibold rounded-xl transition-all hover:-translate-y-0.5 ${
                         pkg.popular
                           ? "bg-primary text-primary-foreground hover:bg-primary/95 hover:shadow-md"
-                          : "bg-secondary hover:bg-secondary/80 text-foreground"
+                          : "bg-secondary hover:bg-secondary/80 text-foreground hover:shadow-sm"
                       }`}
                     >
                       {pkg.ctaText}

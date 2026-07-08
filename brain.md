@@ -1,9 +1,12 @@
 # 🧠 Grave Care Kashmir — Project Brain
 
-> **Last Updated**: 2026-07-06  
-> **Stack**: Next.js 14 + React 18 + TypeScript + Tailwind CSS 3 + Framer Motion + GSAP + Lenis  
-> **Deployment**: TBD  
-> **CMS**: Supabase (PostgreSQL)
+> **Last Updated**: 2026-07-08 (audit pass)  
+> **Stack**: Next.js 14 + React 18 + TypeScript + Tailwind CSS 3 + Framer Motion + GSAP + Lenis + Three.js  
+> **Deployment**: Vercel (repo: github.com/tawfeeq-A/Kashmir-Grave-Care)  
+> **CMS**: Supabase (PostgreSQL) — RLS policies in `docs/supabase-rls.sql`  
+> **PWA**: installable (manifest.json + sw.js). **First Load JS: 262 KB** (Three.js code-split via dynamic import).
+
+> ⚠️ **AGENT NOTE (read first, always):** This `brain.md` is the source of truth for what has been built and changed. Consult it BEFORE making any new changes, and UPDATE it after every set of changes. Skills installed for this project live in `.kiro/steering/` (UI/UX Pro Max) plus the global taste/design skills.
 
 ---
 
@@ -14,7 +17,7 @@ grave-care-kashmir/
 ├── pages/
 │   ├── _app.tsx            # App wrapper — SmoothScroll + MaskReveal + Navbar + Footer + AdminPanel
 │   ├── _document.tsx       # HTML document — Google Fonts (Outfit, Inter, Playfair Display, Noto Nastaliq Urdu)
-│   ├── index.tsx           # Homepage — Hero, ExpandingPanels, Before/After, SVGPathTimeline, AnimatedCounters, HorizontalScrollSlider, CTA
+│   ├── index.tsx           # Homepage (redesigned 07-08) — Hero → Emotional Intro (split w/ image) → Services (bento) → Before/After → SVGPathTimeline → AnimatedCounters → HorizontalScrollSlider → Final CTA
 │   ├── about.tsx           # About page — Story, Pillars, Cemeteries served
 │   ├── services.tsx        # Services & pricing — 3 packages + custom addons + WorkGallery
 │   ├── work.tsx            # Portfolio gallery — Instagram/Facebook media from Supabase
@@ -24,25 +27,26 @@ grave-care-kashmir/
 │   ├── ParticleCanvas.tsx   # Canvas-based floating particles (emerald/gold/white)
 │   ├── ScrollReveal.tsx     # GSAP ScrollTrigger-powered scroll reveal (up/down/left/right/scale/fade)
 │   ├── MaskReveal.tsx       # Page entrance mask animation (clip-path circle reveal)
-│   ├── HorizontalScrollSlider.tsx  # GSAP pinned horizontal scroll section
+│   ├── HorizontalScrollSlider.tsx  # GSAP pinned horizontal scroll (rebuilt 07-08, all devices) + reduced-motion swipe fallback
 │   ├── SVGPathTimeline.tsx  # Scroll-drawn SVG path timeline with alternating nodes
 │   ├── ExpandingPanels.tsx  # Interactive accordion panels (one active, rest contracted)
-│   ├── AnimatedCounters.tsx # Circular SVG gauge counters with GSAP count-up
-│   ├── HoverFocusGrid.tsx   # 3-tile grid with hover scale transitions
-│   ├── WobblySphereCanvas.tsx # 3D-projected wave sphere controlled by scroll velocity and depth
-│   ├── Navbar.tsx           # Fixed navbar with scroll-based transparency + mobile drawer
-│   ├── Footer.tsx           # Footer with monumental scrolling background text
-│   ├── OrbitalHero.tsx      # 3D orbital card with floating info cards
-│   ├── OrbitalHero.module.css  # CSS module for orbital animations
-│   ├── ImageBeforeAfter.tsx # Interactive before/after image slider
+│   ├── AnimatedCounters.tsx # Circular SVG gauge counters — IntersectionObserver + rAF count-up (07-08)
+│   ├── WobblySphereCanvas.tsx # 3D wave sphere (IcosahedronGeometry 32) — reduced-motion + tab-hidden pause; dynamic-imported
+│   ├── ParticleCanvas.tsx   # 2D particles — reduced-motion + tab-hidden pause, pointer-events-none; dynamic-imported
+│   ├── Navbar.tsx           # Minimal fixed navbar — logo (left) + social icons (right). No nav links / hamburger
+│   ├── SideDock.tsx         # Router-wired wrapper for the collapsible vertical side dock (nav + WhatsApp)
+│   ├── Footer.tsx           # Footer + monumental text + dark-mode toggle + newsletter (email maxLength 160)
+│   ├── ImageBeforeAfter.tsx # Interactive before/after image slider (raw img, clip-path)
 │   ├── Scroll3DTilt.tsx     # Scroll-based 3D perspective tilt (Framer Motion)
-│   ├── Reveal.tsx           # Legacy Framer Motion scroll reveal (still available)
-│   ├── WorkGallery.tsx      # Work media grid from Supabase
-│   ├── AdminPanel.tsx       # Full admin panel (triple-tap triggered from footer)
-│   ├── ProgressBar.tsx      # Page load progress bar
-│   ├── WhatsAppButton.tsx   # Floating WhatsApp CTA button
+│   ├── WorkGallery.tsx      # Work media grid from Supabase (external URLs → raw img)
+│   ├── AdminPanel.tsx       # Full admin panel (triple-tap from footer) + "Reset All to Defaults"
+│   ├── ProgressBar.tsx      # Scroll progress bar — ref+rAF DOM write (no per-frame React re-render)
 │   └── ui/
-│       └── shape-landing-hero.tsx  # Geometric shapes hero + ParticleCanvas background
+│       ├── shape-landing-hero.tsx  # Geometric shapes hero
+│       └── dock-two.tsx     # Collapsible vertical side dock (right edge) — burger→expand, tooltips to the left
+│   # DELETED 07-08 audit: OrbitalHero(.tsx/.module.css), HoverFocusGrid, ExpandingPanels, Reveal, WhatsAppButton
+├── docs/
+│   └── supabase-rls.sql     # RLS policies to run in Supabase SQL editor (run before go-live)
 ├── context/
 │   └── SiteContext.tsx      # React context — fetches site_settings + work_media from Supabase
 ├── lib/
@@ -206,3 +210,214 @@ File: `.env.local`
 #### New Dependencies:
 - `gsap` — Scroll animations, counters, timeline
 - `lenis` — Smooth scrolling
+
+### 2026-07-06 — Transition, Background & Theme Enhancements
+
+#### Proposed Changes:
+1. **Disable Entrance Mask Transition** (`components/MaskReveal.tsx`):
+   - Modify component to render children immediately. Remove the circles animation delay and the initial clip-path circles.
+2. **Move Sphere & Particle Animation to Page Background** (`pages/index.tsx`, `components/ui/shape-landing-hero.tsx`):
+   - Move `WobblySphereCanvas` and `ParticleCanvas` from the local Hero component (`shape-landing-hero.tsx`) to a global fixed background container on the Homepage (`pages/index.tsx`) with a z-index of `-10`, ensuring the wobbly waves span from the header all the way down to the footer.
+   - Add `pointer-events-none` to shape-landing-hero wrappers to prevent any visual overlays from blocking click events.
+3. **Add Light/Dark Theme Adaptability to 3D Sphere** (`components/WobblySphereCanvas.tsx`):
+   - Dynamically read CSS custom properties (`--primary` and `--accent`) in the animation tick to update color uniforms. This automatically syncs the Three.js WebGL rendering colors during dark/light mode switches.
+
+### 2026-07-07 — Admin Panel Scroll Fix
+
+#### Proposed Changes:
+1. **Fix Admin Panel Scrolling** (`components/AdminPanel.tsx`):
+   - Add `data-lenis-prevent` attribute to the top-level backdrop wrapper of `AdminPanel` to prevent Lenis from hijacking wheel events.
+   - Set `document.body.style.overflow = 'hidden'` on mount and restore on unmount to freeze homepage background scroll when editing.
+
+### 2026-07-07 — Global Background Animation & Page Transparency
+
+#### Proposed Changes:
+1. **Move Background Canvas to Layout Level** (`pages/_app.tsx`):
+   - Import and render `WobblySphereCanvas` and `ParticleCanvas` globally inside `pages/_app.tsx`.
+   - Remove the local instance from `pages/index.tsx` to prevent duplicate Three.js contexts.
+2. **Apply Transparency to Pages**:
+   - Update wrapper containers in `pages/about.tsx`, `pages/services.tsx`, `pages/work.tsx`, and `pages/contact.tsx` to use `bg-background/80 backdrop-blur-md` instead of solid `bg-background`. This enables the wobbly sphere waves to remain visible and morph dynamically across the entire site.
+
+### 2026-07-07 — Horizontal Scroll Slider Mobile Height Fix
+
+#### Proposed Changes:
+1. **Fix Mobile Content Clipping** (`components/HorizontalScrollSlider.tsx`):
+   - Replace the hardcoded `60vh` inline height on slide elements with a responsive height class: `min-h-[75vh] lg:min-h-0 lg:h-[60vh]`. This allows stacked grid contents to expand naturally on mobile devices without clipping the lower part of the card images.
+   - Scale down the large decorative numbers (`text-[80px]` instead of `text-[120px]`) and reduce negative margin offsets on mobile to prevent layouts from overlapping.
+   - Adjust the maximum image width on mobile to `max-w-[280px]` (expanding to `360px` on desktop) for optimized framing.
+
+### 2026-07-07 — SVGPathTimeline Responsive Layout Redesign
+
+#### Proposed Changes:
+1. **Redesign SVGPathTimeline for Mobile Responsiveness** (`components/SVGPathTimeline.tsx`):
+   - Make the connecting line SVG visible on all screen sizes (remove `hidden lg:block`).
+   - On mobile, position the connecting line and numbers on the **left** (`left-[28px]`), shifting the text content to the right with left-alignment.
+   - On desktop, transition the layout back to a centered alternating timeline.
+   - Draw a background track line and an active progress path (`M2 0 L2 100`) that animates sequentially as the user scrolls.
+
+### 2026-07-07 — Complete UI/UX Refinement & Performance Optimization
+
+#### Proposed Changes & Accomplishments:
+1. **Responsive Horizontal Scroll Slider Restoration** (`components/HorizontalScrollSlider.tsx`):
+   - Preserved horizontal GSAP pinning on all screen widths as a hero element.
+   - Sized slide content dynamically for mobile: reduced decorative numbers size (`text-[45px]`), modified mobile image aspect ratios to `4/3` and container bounds to `max-h-[580px]` to guarantee the entire slider fits mobile heights without clipping or cropping.
+2. **Warm, Supportive, and Comforting Text Overhaul** (`pages/index.tsx`):
+   - Rewrote all homepage core copy, services, step consultation labels, and custodianship values to use a warmer, empathetic tone comforting for grieving families.
+3. **Sequential Timeline Path Connectors** (`components/SVGPathTimeline.tsx`):
+   - Replaced absolute SVG tracking with inline segment paths inside a natural vertical flex timeline column.
+   - Triggers dynamic sequential line drawing dot-to-dot as you scroll down each step.
+4. **60fps Render Loop Performance Caching** (`components/WobblySphereCanvas.tsx`, `components/ParticleCanvas.tsx`):
+   - Configured a root `MutationObserver` to cache colors and active dark mode boolean state.
+   - Completely removed expensive layout-reflow DOM reads from Three.js and 2D canvas ticking rendering frames.
+5. **Mobile Touch Adjustments** (`components/Scroll3DTilt.tsx`, `components/HoverFocusGrid.tsx`):
+   - Deactivated 3D tilts and hover scale/dim filters on pointer-based touch screens to optimize fluid scrolls.
+6. **Hero Shape slow float & trust badges** (`components/ui/shape-landing-hero.tsx`):
+   - Slowed float timings, softened shape outlines, and added trust banners directly below the description text.
+
+### 2026-07-08 — Text Sync, Content Fixes & Skill Setup
+
+#### Accomplished:
+1. **UI/UX Pro Max skill installed** into `.kiro/steering/` via `uipro init --ai kiro`. Global taste/design skills (impeccable, gpt-taste, design-taste-frontend, emil-design-eng, high-end-visual-design, redesign-existing-projects, review-animations) are loaded per session for this project.
+2. **Text synced from Vercel deployment** (github.com/tawfeeq-A/Kashmir-Grave-Care) into local `index.tsx`: concise service descriptions, direct process-step copy, lowercase eco-card titles.
+3. **Polite wording fix**: every "local labor" reference changed to "local caretakers and gardeners". Updated in `index.tsx`, `contentSchema.ts` (`ecoCard1Text` default), and hero trust badge in `shape-landing-hero.tsx` ("Fair Wages for Local Caretakers").
+4. **globals.css a11y pass**: added full `prefers-reduced-motion` media query disabling infinite/entrance animations; changed `.premium-card` transition from `all` to specific props (avoids GSAP transform conflicts); added `.focus-ring` utility; added glass-card inner highlight.
+
+### 2026-07-08 — Landing Page Visual Redesign
+
+#### `pages/index.tsx` restructured for premium feel:
+1. Removed `OrbitalHero` block (generic floating cards) and the `HoverFocusGrid` 3-equal-card services pattern.
+2. **Emotional Intro**: asymmetric split — Kashmir cemetery image (aspect 4/3 mobile, 4/5 desktop) with gradient-blur backdrop + floating "12+ Cemeteries" stat card, paired with heading "Distance should never mean neglect." (also set as `eyebrow` default in `contentSchema.ts`).
+3. **Services**: tinted `bg-secondary/20` band, left-aligned header, bento-style cards (middle card `lg:translate-y-4` offset), icon scale/fill on hover.
+4. **Before/After** moved higher; **Final CTA** cleaned (removed spinning rings, added top-edge highlight line).
+5. `active:scale-[0.97]` tactile feedback on all CTAs.
+
+### 2026-07-08 — Dock Component + Vertical Side Dock
+
+1. Installed shadcn-style `components/ui/dock-two.tsx` (deps `lucide-react` + `framer-motion` already present; `components/ui` + `cn()` already existed).
+2. First iteration: horizontal dock in navbar (center → then right side).
+3. **Final design — Vertical Side Dock**: `dock-two.tsx` is now a fixed vertical pill on the right edge (`right-5 sm:right-8 lg:right-10`, `top-1/2 -translate-y-1/2`, `z-50`). Contains nav icons (Home/Services/About/Work/Book) + separator + WhatsApp (green accent). Tooltips appear to the LEFT. Active page = left dot indicator. Slide-in entry animation.
+   - `components/SideDock.tsx` wires dock items to `next/router` and Supabase WhatsApp number; rendered globally in `_app.tsx`.
+   - **Navbar simplified** to logo + social icons only. Hamburger + mobile drawer REMOVED.
+   - **Floating `WhatsAppButton` removed** from `_app.tsx` — WhatsApp consolidated into the dock (single point).
+
+### 2026-07-08 — Mobile-First Optimization & Component Fixes
+
+1. **Full mobile pass** across `index.tsx` (reduced section padding at breakpoints, image aspect ratios, centered text on mobile / left on desktop, stacked buttons), `shape-landing-hero.tsx` (hero `min-h-[100dvh]` + `pt-16 sm:pt-0`, responsive type scale), `AnimatedCounters.tsx` (smaller gauges/gaps on mobile), `SVGPathTimeline.tsx` (reduced header margin/type on mobile).
+2. **AnimatedCounters ("Our Impact") FIX**: replaced unreliable GSAP ScrollTrigger trigger (was not firing under Lenis + dynamic pinned heights) with `IntersectionObserver` + `requestAnimationFrame` count-up. Reduced-motion jumps to final values; already-in-view fallback on mount. Fixed conflicting `sm:text-3xl`/`sm:text-4xl` heading classes.
+3. **HorizontalScrollSlider REBUILT from scratch** (previous code had bugs): now horizontal-pinned on ALL devices. Uses exact pixel travel `track.scrollWidth - window.innerWidth` (last panel lands flush), `start:"top top"`, `pin:true`, `scrub:1`, `anticipatePin:1`, `invalidateOnRefresh:true`, `ScrollTrigger.refresh()` after image loads + rAF. Panels are full-viewport `w-screen h-[100dvh]`, responsive grid (image top / text below on mobile, side-by-side on desktop). Header pinned top + progress bar pinned bottom (absolute). Reduced-motion fallback = native `snap-x` swipe carousel.
+
+#### Current Homepage Section Order:
+Hero → Emotional Intro → Services (bento) → Before/After → Process Timeline → Animated Stats → Eco Horizontal Scroll → Final CTA
+
+#### Notes / gotchas for future work:
+- Prefer `IntersectionObserver`/native APIs over GSAP ScrollTrigger for simple in-view triggers when Lenis + pinned sections make trigger positions unreliable.
+- The vertical `SideDock` is the ONLY navigation on all screen sizes (no hamburger). Keep WhatsApp only there + in the Final CTA / booking flow.
+- All homepage text still falls back to `contentSchema.ts` defaults; admin "Reset All to Defaults" clears Supabase `content_json` keys so code defaults show.
+- **Light mode is the default.** Dark mode only applies if user explicitly toggles via footer button. FOUC script only checks `localStorage("gck-theme") === "dark"`.
+- The eco `HorizontalScrollSlider` header is in normal document flow (NOT fixed/absolute) — it pins with the section and stays visible throughout all panels.
+
+### 2026-07-08 — Collapsible Dock, Dark Mode Toggle, PWA & Eco Section Fixes
+
+#### Collapsible Dock (`components/ui/dock-two.tsx`):
+- Dock auto-expands on page load (3s) showing all nav icons, then collapses to a single burger (Menu) icon.
+- Hover (desktop) / tap (mobile) to re-expand. 400ms leave-delay prevents accidental collapse.
+- Uses `AnimatePresence` for smooth height/opacity transitions.
+- Position: `right-2 sm:right-3 top-[38%]` (glued to right edge, slightly above center).
+- Icons: `w-4 h-4`, dark mode contrast (`text-foreground/70` + `/80` dark variant).
+- Tooltips: appear to the left, NOT clipped (removed `overflow-hidden` from container).
+
+#### Dark Mode:
+- Toggle removed from dock, added to Footer bottom panel (Sun/Moon icon + "Light"/"Dark" text label).
+- Default: **Light mode**. Only applies `dark` class if `localStorage("gck-theme") === "dark"`.
+- FOUC prevention script in `_document.tsx` (no system preference auto-detect).
+
+#### PWA (installable app):
+- `public/manifest.json` — standalone display, theme-color `#1E5C45`, uses `logo.jpg` as icon.
+- `public/sw.js` — network-first service worker, precaches core pages + images, offline fallback.
+- Service worker registered in `_app.tsx` via `useEffect`.
+- `_document.tsx` — manifest link, theme-color meta, apple-mobile-web-app meta tags.
+
+#### HorizontalScrollSlider (Eco section) — Final Layout:
+- **Header in normal flow** inside the pinned section (not fixed, not absolute). Pins WITH the section, always visible, never fades, never jumps.
+- Section has `h-[100dvh]` so pin engages immediately when top reaches viewport top.
+- Flex layout: header (shrink-0, `pt-10` mobile) → track (flex-1) → progress bar (shrink-0).
+- **Number + title on same line** (`flex items-baseline`) — saves vertical space on mobile.
+- Image: `max-w-[240px]` mobile, `aspect-[4/5]` (taller than square, dramatic but fits).
+- Each panel has `overflow-hidden` to prevent adjacent slide content from peeking in.
+- Reduced-motion fallback: native snap-x scroll carousel.
+
+#### Service Cards Fix:
+- Removed `lg:translate-y-4` offset on middle card that caused misalignment on laptop.
+- Added `items-stretch` for equal-height cards.
+
+### 2026-07-08 — Full Audit Pass (performance, animation, security)
+
+**Result: First Load JS 403 KB → 262 KB (-35%); total image weight ~6.7 MB → ~1.9 MB.**
+
+#### Performance / images:
+- Compressed all source images (one-time `sharp`, then removed): `logo.jpg` 639 KB → 4 KB, before/after JPGs -64/65%, `kashmir-cemetery.png` -27%.
+- Converted 4 eco images PNG → WebP (68–148 KB, was ~1 MB each). Refs updated to `.webp` in `index.tsx`.
+- Generated real PWA icons `public/icons/icon-192.png` + `icon-512.png`; `manifest.json` now points to them.
+- `next.config.js`: `images.formats = ['image/avif','image/webp']`; removed unused unsplash domain.
+
+#### Canvases (both `WobblySphereCanvas` + `ParticleCanvas`):
+- `dynamic(() => import(...), { ssr:false })` in `_app.tsx` → Three.js out of the initial bundle (the big First-Load win).
+- Both now early-return under `prefers-reduced-motion` and pause their rAF loop on `visibilitychange` (tab hidden).
+- Sphere `IcosahedronGeometry(1.6, 64) → (1.6, 32)` (~75% fewer displaced vertices).
+- ParticleCanvas: removed dead `mouseRef` + mousemove listener; `pointer-events-auto → none`.
+
+#### Animation:
+- **Page transitions:** opacity-only crossfade via `AnimatePresence mode="wait"` keyed on `router.asPath` in `_app.tsx`. Opacity-ONLY on purpose (transform would break GSAP `position:fixed` pinning + fixed SideDock). Honors reduced-motion. Calls `ScrollTrigger.refresh()` on complete.
+- `ProgressBar`: ref + rAF DOM write instead of `setState` per scroll frame.
+
+#### Security:
+- `next.config.js` security headers: `X-Content-Type-Options`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy`, `Permissions-Policy`, `X-DNS-Prefetch-Control`.
+- `sw.js`: caches **same-origin GET only** (skips Supabase API / fonts / external media); cache bumped `gck-v1 → gck-v2`.
+- Contact form: central `FIELD_LIMITS` truncation in `handleInputChange`; footer newsletter email `maxLength 160`.
+- **`docs/supabase-rls.sql`** created — MUST be run in Supabase before go-live. This is the real gate for the public anon key (public read on settings/media; anon INSERT-only on submissions/newsletter; admin-only reads).
+
+#### Cleanup:
+- Deleted unused: `OrbitalHero.tsx` + `.module.css`, `HoverFocusGrid.tsx`, `ExpandingPanels.tsx`, `Reveal.tsx`, `WhatsAppButton.tsx`.
+- `package.json`: removed `dotenv` (unused); moved `@types/three` to devDependencies.
+
+#### ⚠️ Still requires the user (dashboard, cannot be done from code):
+- **Run `docs/supabase-rls.sql`** in Supabase SQL Editor and verify anon cannot read `contact_submissions` / `newsletter_subscriptions`.
+- Confirm `verify_recovery_pin` / `update_recovery_pin` RPCs are `SECURITY DEFINER` and only return booleans.
+
+### 2026-07-08 — Dock UX, Eco Snap, Sphere Contrast, Favicon
+
+#### Dock (`components/ui/dock-two.tsx`) — rewritten:
+- **Fixed touch double-tap**: hover handlers are gated behind `matchMedia("(hover:hover) and (pointer:fine)")`. Touch devices only use tap (no emulated mouseenter fighting the click). First tap opens.
+- **Auto-close**: whenever expanded, a 4s timer collapses it unless the pointer is hovering (`hoveringRef`). Touch → opens then closes itself; hover → stays open while hovered, closes 300ms after leave.
+- **Tap-outside to close** on touch (pointerdown listener).
+- **Adaptive contrast**: an IntersectionObserver watches `[data-dock-dark]` sections crossing a band at the dock's center (`rootMargin:"-38% 0px -62% 0px"`). When over a dark section, icons/burger go white and the dock bg becomes `bg-black/25 border-white/20`. The final CTA `<section data-dock-dark>` on the homepage is marked.
+- Smoother open/close (durations 0.15–0.18), bg opacity bumped to `/90`.
+
+#### Eco `HorizontalScrollSlider`:
+- Added GSAP ScrollTrigger **`snap`** (`snapTo: 1/(n-1)`) so it settles on whole panels — one slide fills the frame instead of showing two half-panels. (Note: verify snap ↔ Lenis feel on device; standard Lenis+ScrollTrigger integration is in `SmoothScroll.tsx`.)
+- Header/tag pushed down (`pt-16 sm:pt-14 lg:pt-12`) so tag + title clear the navbar and the section fits one frame.
+- Pin still `start:"top top"` (horizontal begins exactly when the section tops out).
+
+#### Background sphere:
+- Light-mode opacity bumped `opacity-20 → opacity-[0.32]` (dark stays `/40`) so the wobble sphere reads on white without being loud.
+
+#### Favicon:
+- `_document.tsx`: added `<link rel="icon">` (icon-192/512.png) + `shortcut icon` (logo.jpg) using the generated logo icons.
+
+### 2026-07-08 — Premium Glass Polish + Favicon + Deploy Config
+
+#### Visual polish (`styles/globals.css` + className tweaks):
+- **`.glass-card` upgraded**: `backdrop-filter: blur(22px) saturate(160%) brightness(1.02)`, two-layer shadow, `::before` thin top-edge highlight (confined to top ~14% so it never washes content), `::after` hairline inner border. Used by the contact form card + the intro floating stat card.
+- **`.shadow-premium`**: three-layer ambient+key shadow token (light + dark variants).
+- **`.btn-sheen`**: diagonal sheen sweep on hover — applied to the two primary WhatsApp CTAs (intro + final CTA).
+- **`.grain-overlay`**: subtle SVG fractal-noise overlay (mix-blend overlay) — added to the dark final-CTA `<section>` to kill banding.
+- **`.premium-card`**: deeper two-layer lift shadow, softer easing. Service cards use `premium-card` + `bg-background/70 backdrop-blur-md` (kept off full glass-card to avoid pseudo-element paint-order washing the icon/text).
+- Body: `-webkit-font-smoothing: antialiased`, `text-rendering: optimizeLegibility`; `h1/h2/h3 { text-wrap: balance }`.
+- All new effects (sheen, grain) disabled under `prefers-reduced-motion`.
+
+#### Favicon: `_document.tsx` — `<link rel="icon">` (icon-192/512.png) + `shortcut icon` (logo.jpg).
+
+#### Deploy / Vercel:
+- **`vercel.json`** added with `git.deploymentEnabled: false` → **disables automatic Git deploys**. Deploys are now manual only (Vercel CLI `vercel --prod` or the dashboard "Deploy" button).
+- Repo: `main` branch, remote `github.com/tawfeeq-A/Kashmir-Grave-Care` (project = repo root).
+- `.env.local` is gitignored (no secrets committed). `.kiro/` steering left untracked.

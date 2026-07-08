@@ -48,9 +48,25 @@ export default function Contact() {
     }
   }, [router.isReady, router.query]);
 
+  // Per-field length caps to prevent oversized payloads reaching Supabase
+  const FIELD_LIMITS: Record<string, number> = {
+    deceasedName: 120,
+    deceasedYear: 40,
+    customCemetery: 160,
+    landmarks: 500,
+    applicantName: 120,
+    relationship: 80,
+    email: 160,
+    phone: 40,
+    country: 80,
+    notes: 800,
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const limit = FIELD_LIMITS[name];
+    const safeValue = limit ? value.slice(0, limit) : value;
+    setFormData((prev) => ({ ...prev, [name]: safeValue }));
   };
 
   const nextStep = () => {
@@ -161,7 +177,7 @@ export default function Contact() {
         />
       </Head>
 
-      <div className="bg-background pt-28 pb-20 min-h-screen flex flex-col justify-center relative overflow-hidden">
+      <div className="bg-background/80 backdrop-blur-md pt-28 pb-20 min-h-screen flex flex-col justify-center relative overflow-hidden">
         {/* Decorative background elements */}
         <div className="absolute top-20 right-0 w-96 h-96 rounded-full bg-primary/5 blur-3xl pointer-events-none" />
         <div className="absolute bottom-20 left-0 w-80 h-80 rounded-full bg-accent/5 blur-3xl pointer-events-none" />

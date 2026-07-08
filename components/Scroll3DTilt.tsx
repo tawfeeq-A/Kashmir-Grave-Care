@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 
 interface Scroll3DTiltProps {
@@ -8,6 +8,16 @@ interface Scroll3DTiltProps {
 
 export default function Scroll3DTilt({ children, maxTilt = 8 }: Scroll3DTiltProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   
   // Track scroll position of the element relative to the viewport
   const { scrollYProgress } = useScroll({
@@ -25,6 +35,10 @@ export default function Scroll3DTilt({ children, maxTilt = 8 }: Scroll3DTiltProp
     damping: 20,
     max: 15
   } as any);
+
+  if (isMobile) {
+    return <div className="w-full h-full">{children}</div>;
+  }
 
   return (
     <div 

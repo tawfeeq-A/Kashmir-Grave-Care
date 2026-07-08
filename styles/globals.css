@@ -53,6 +53,13 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  /* Graceful heading wraps + tighter tracking for a refined feel */
+  h1, h2, h3 {
+    text-wrap: balance;
   }
   html, html.scroll-smooth {
     scroll-behavior: auto !important;
@@ -161,17 +168,111 @@
   animation: spinSlow 20s linear infinite;
 }
 
-/* ─── Glassmorphism card ─── */
+/* ─── Premium glassmorphism card ─── */
 .glass-card {
-  background: hsl(var(--background) / 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  position: relative;
+  background: hsl(var(--background) / 0.62);
+  backdrop-filter: blur(22px) saturate(160%) brightness(1.02);
+  -webkit-backdrop-filter: blur(22px) saturate(160%) brightness(1.02);
   border: 1px solid hsl(var(--border) / 0.5);
+  box-shadow:
+    0 1px 1px hsl(var(--foreground) / 0.03),
+    0 10px 30px -12px hsl(var(--foreground) / 0.12);
 }
 
 .dark .glass-card {
-  background: hsl(var(--background) / 0.5);
-  border: 1px solid hsl(var(--border) / 0.3);
+  background: hsl(var(--background) / 0.45);
+  border: 1px solid hsl(0 0% 100% / 0.08);
+  box-shadow:
+    0 1px 1px hsl(0 0% 0% / 0.3),
+    0 10px 30px -12px hsl(0 0% 0% / 0.5);
+}
+
+/* Thin top-edge highlight — reads as light catching the glass rim,
+   confined to the top ~14% so it never washes card content. */
+.glass-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    hsl(0 0% 100% / 0.4) 0%,
+    hsl(0 0% 100% / 0.06) 6%,
+    transparent 14%
+  );
+  pointer-events: none;
+}
+
+.dark .glass-card::before {
+  background: linear-gradient(
+    180deg,
+    hsl(0 0% 100% / 0.14) 0%,
+    hsl(0 0% 100% / 0.03) 6%,
+    transparent 14%
+  );
+}
+
+.glass-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid hsl(var(--foreground) / 0.05);
+  pointer-events: none;
+}
+
+/* ─── Premium layered shadow (ambient + key light) ─── */
+.shadow-premium {
+  box-shadow:
+    0 2px 4px hsl(var(--foreground) / 0.04),
+    0 8px 16px -6px hsl(var(--foreground) / 0.08),
+    0 24px 48px -16px hsl(var(--foreground) / 0.12);
+}
+
+.dark .shadow-premium {
+  box-shadow:
+    0 2px 4px hsl(0 0% 0% / 0.3),
+    0 8px 16px -6px hsl(0 0% 0% / 0.4),
+    0 24px 48px -16px hsl(0 0% 0% / 0.55);
+}
+
+/* ─── Button sheen sweep (on hover) ─── */
+.btn-sheen {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.btn-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 20%,
+    hsl(0 0% 100% / 0.22) 45%,
+    hsl(0 0% 100% / 0.22) 55%,
+    transparent 80%
+  );
+  transform: translateX(-120%);
+  transition: transform 0.7s cubic-bezier(0.25, 0.4, 0.25, 1);
+  pointer-events: none;
+}
+
+.btn-sheen:hover::after {
+  transform: translateX(120%);
+}
+
+/* ─── Subtle grain overlay (kills banding on dark surfaces) ─── */
+.grain-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
 }
 
 /* ─── Monumental footer text ─── */
@@ -204,12 +305,19 @@
 
 /* ─── Premium card hover ─── */
 .premium-card {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.45s cubic-bezier(0.25, 0.4, 0.25, 1), box-shadow 0.45s cubic-bezier(0.25, 0.4, 0.25, 1);
 }
 
 .premium-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 60px -12px hsl(var(--primary) / 0.15);
+  transform: translateY(-5px);
+  box-shadow:
+    0 8px 20px -10px hsl(var(--foreground) / 0.1),
+    0 26px 60px -14px hsl(var(--primary) / 0.2);
+}
+
+/* ─── Focus-visible ring (keyboard a11y) ─── */
+.focus-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background;
 }
 
 /* ─── Gradient text ─── */
@@ -242,4 +350,55 @@
 ::selection {
   background: hsl(var(--primary) / 0.2);
   color: hsl(var(--primary));
+}
+
+/* ═══════════════════════════════════════════════════════
+   REDUCED MOTION — Accessibility
+   ═══════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fadeIn,
+  .animate-fadeInUp {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .animate-pulseGlow {
+    animation: none;
+  }
+
+  .animate-float {
+    animation: none;
+  }
+
+  .animate-gradientShift {
+    animation: none;
+  }
+
+  .animate-scrollText {
+    animation: none;
+  }
+
+  .animate-spinSlow {
+    animation: none;
+  }
+
+  .premium-card:hover {
+    transform: none;
+  }
+
+  .btn-sheen::after {
+    display: none;
+  }
+
+  .grain-overlay {
+    display: none;
+  }
+
+  .section-fade-in {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }

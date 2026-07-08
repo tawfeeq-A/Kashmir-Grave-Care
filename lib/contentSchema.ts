@@ -16,7 +16,7 @@ export const contentSchema: ContentGroup[] = [
     id: "home_hero_intro",
     title: "Home Page - Hero Intro",
     fields: [
-      { key: "eyebrow", label: "Intro Heading", type: "text", defaultValue: "Grave maintenance done with care and precision." },
+      { key: "eyebrow", label: "Intro Heading", type: "text", defaultValue: "Distance should never mean neglect." },
       { key: "heroWhatsappButton", label: "WhatsApp Button Text", type: "text", defaultValue: "Chat on WhatsApp" },
       { key: "heroWorkButton", label: "Work Button Text", type: "text", defaultValue: "See our work" },
     ]
@@ -90,7 +90,7 @@ export const contentSchema: ContentGroup[] = [
       { key: "ecoText2", label: "Paragraph 2", type: "textarea", defaultValue: "Instead, we employ local Kashmiri caretakers and gardeners, providing them with a fair, family-supporting wage. We prioritize keeping the grave clean and well-maintained while respecting the local graveyard aesthetics." },
       { key: "ecoLearnMore", label: "Learn More Button Text", type: "text", defaultValue: "Learn about our values" },
       { key: "ecoCard1Title", label: "Value Card 1 Title", type: "text", defaultValue: "Fair wages for caretakers" },
-      { key: "ecoCard1Text", label: "Value Card 1 Description", type: "text", defaultValue: "Directly supporting Kashmiri local labor with dignified and fair compensation." },
+      { key: "ecoCard1Text", label: "Value Card 1 Description", type: "text", defaultValue: "Directly supporting Kashmiri local caretakers and gardeners with dignified, fair compensation." },
       { key: "ecoCard2Title", label: "Value Card 2 Title", type: "text", defaultValue: "Organic horticulture" },
       { key: "ecoCard2Text", label: "Value Card 2 Description", type: "text", defaultValue: "Using manure and organic soil enrichment, protecting local cemetery ecosystems." },
       { key: "ecoCard3Title", label: "Value Card 3 Title", type: "text", defaultValue: "Respectful Appearance" },

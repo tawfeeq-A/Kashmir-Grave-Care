@@ -1,28 +1,42 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 
 export default function ProgressBar() {
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleScroll = () => {
+    let ticking = false;
+
+    const update = () => {
+      const bar = barRef.current;
+      if (!bar) return;
       const totalScroll = document.documentElement.scrollTop;
-      const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-      if (windowHeight === 0) return;
-      const scroll = totalScroll / windowHeight;
-      setScrollProgress(scroll);
+      const windowHeight =
+        document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const progress = windowHeight > 0 ? totalScroll / windowHeight : 0;
+      // Write transform directly to the DOM — no React re-render per frame
+      bar.style.transform = `scaleX(${progress})`;
+      ticking = false;
+    };
+
+    const handleScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
+    update();
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
     <div
-      className="fixed top-0 left-0 h-[4px] w-full z-[100] origin-left shadow-[0_0_14px_rgba(53,208,127,0.45)] transition-transform duration-75 ease-out"
+      ref={barRef}
+      className="fixed top-0 left-0 h-[4px] w-full z-[100] origin-left shadow-[0_0_14px_rgba(53,208,127,0.45)]"
       style={{
-        transform: `scaleX(${scrollProgress})`,
+        transform: "scaleX(0)",
         background: "linear-gradient(90deg, #35d07f, #C2841A)",
       }}
     />

@@ -52,7 +52,7 @@ export default function About() {
         />
       </Head>
 
-      <div className="bg-background pt-28 pb-20">
+      <div className="bg-background/80 backdrop-blur-md pt-28 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Main Story Hero */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-24">
@@ -135,16 +135,16 @@ export default function About() {
                 </div>
 
                 <ScrollReveal direction="right" delay={0.2}>
-                  <div className="space-y-4">
+                  <div className="space-y-4 w-full lg:min-w-[340px]">
                     <div className="p-6 bg-background rounded-2xl border border-border glass-card">
-                      <h4 className="font-serif font-bold text-foreground text-lg mb-2">
+                      <h4 className="font-serif font-bold text-foreground text-lg mb-4">
                         {content.aboutCemeteriesHeading || "Srinagar Cemeteries We Regularly Serve"}
                       </h4>
-                      <ul className="space-y-2.5 text-sm text-muted-foreground">
+                      <ul className="space-y-3 text-sm text-muted-foreground">
                         {cemeteries.map((cem, idx) => (
-                          <li key={idx} className="flex items-center justify-between">
+                          <li key={idx} className="flex items-center justify-between gap-3">
                             <span>{cem.name}</span>
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-foreground">{cem.tag}</span>
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-foreground whitespace-nowrap">{cem.tag}</span>
                           </li>
                         ))}
                       </ul>

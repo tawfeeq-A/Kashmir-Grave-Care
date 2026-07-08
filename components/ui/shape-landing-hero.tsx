@@ -42,10 +42,10 @@ function ElegantShape({
         >
             <motion.div
                 animate={{
-                    y: [0, 15, 0],
+                    y: [0, 8, 0],
                 }}
                 transition={{
-                    duration: 12,
+                    duration: 16,
                     repeat: Number.POSITIVE_INFINITY,
                     ease: "easeInOut",
                 }}
@@ -60,9 +60,9 @@ function ElegantShape({
                         "absolute inset-0 rounded-full",
                         "bg-gradient-to-r to-transparent",
                         gradient,
-                        "backdrop-blur-[2px] border-2 border-white/[0.15] shadow-[0_8px_32px_0_rgba(255,255,255,0.1)]",
+                        "backdrop-blur-[2px] border-2 border-foreground/[0.08] dark:border-white/[0.15] shadow-[0_8px_32px_0_rgba(0,0,0,0.03)] dark:shadow-[0_8px_32px_0_rgba(255,255,255,0.05)]",
                         "after:absolute after:inset-0 after:rounded-full",
-                        "after:bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.2),transparent_70%)]"
+                        "after:bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_70%)]"
                     )}
                 />
             </motion.div>
@@ -91,26 +91,12 @@ function HeroGeometric({
     };
 
     return (
-        <div className="relative min-h-[90vh] w-full flex items-center justify-center overflow-hidden bg-[#0A1F16]">
-            {/* Background Animations — Future of Finance inspired */}
-            <div className="absolute inset-0 z-0 opacity-60">
-                <WobblySphereCanvas
-                    sphereColor="30, 92, 69" // Emerald Green
-                    accentColor="194, 132, 26" // Warm Amber
-                />
-                <ParticleCanvas
-                    particleCount={50}
-                    colors={[
-                        "rgba(30,92,69,",
-                        "rgba(194,132,26,",
-                        "rgba(255,255,255,",
-                    ]}
-                />
-            </div>
+        <div className="relative min-h-[100dvh] w-full flex items-center justify-center overflow-hidden bg-transparent pt-16 sm:pt-0">
+            {/* Background Animations moved page-wide to index.tsx */}
 
             <div className="absolute inset-0 bg-gradient-to-br from-[#1E5C45]/[0.12] via-transparent to-[#C2841A]/[0.08] blur-3xl z-[1] pointer-events-none" />
 
-            <div className="absolute inset-0 overflow-hidden z-[2]">
+            <div className="absolute inset-0 overflow-hidden z-[2] pointer-events-none">
                 <ElegantShape
                     delay={0.3}
                     width={600}
@@ -165,8 +151,8 @@ function HeroGeometric({
                         initial="hidden"
                         animate="visible"
                     >
-                        <h1 className="text-4xl sm:text-6xl md:text-8xl font-bold mb-6 md:mb-8 tracking-tight font-serif">
-                            <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80">
+                        <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-bold mb-6 md:mb-8 tracking-tight font-serif">
+                            <span className="bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/85">
                                 {title1}
                             </span>
                             {title2 && (
@@ -174,7 +160,7 @@ function HeroGeometric({
                                     <br />
                                     <span
                                         className={cn(
-                                            "bg-clip-text text-transparent bg-gradient-to-r from-amber-200 via-white to-[#C2841A] "
+                                            "bg-clip-text text-transparent bg-gradient-to-r from-[#1E5C45] via-[#C2841A] to-[#A37012] dark:from-amber-200 dark:via-white dark:to-[#C2841A]"
                                         )}
                                     >
                                         {title2}
@@ -191,7 +177,7 @@ function HeroGeometric({
                         animate="visible"
                         className="mb-4"
                     >
-                        <p className="font-urdu text-xl sm:text-2xl md:text-3xl text-[#C2841A] tracking-wide antialiased" dir="rtl">
+                        <p className="font-urdu text-lg sm:text-xl md:text-3xl text-primary dark:text-[#C2841A] tracking-wide antialiased" dir="rtl">
                             آپ کے خاندان کی آخری آرام گاہ، وقار اور احترام کے ساتھ محفوظ
                         </p>
                     </motion.div>
@@ -202,14 +188,36 @@ function HeroGeometric({
                         initial="hidden"
                         animate="visible"
                     >
-                        <p className="text-base sm:text-lg md:text-xl text-white/40 mb-8 leading-relaxed font-light tracking-wide max-w-xl mx-auto px-4">
+                        <p className="text-sm sm:text-base md:text-xl text-muted-foreground mb-6 leading-relaxed font-normal tracking-wide max-w-xl mx-auto px-4">
                             Dignified grave care, cleaning, restoration, and floral tributes in Kashmir. Keeping ancestral memories serene and close.
                         </p>
+                    </motion.div>
+
+                    {/* Trust Badges */}
+                    <motion.div
+                        custom={2.2}
+                        variants={fadeUpVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="flex flex-wrap justify-center items-center gap-2 sm:gap-3 text-[10px] sm:text-xs font-semibold text-muted-foreground/80 mb-8 max-w-2xl mx-auto px-4"
+                    >
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-secondary/50 border border-border/40 gap-1.5 shadow-sm">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                            Geo-tagged Photo Reports
+                        </span>
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-secondary/50 border border-border/40 gap-1.5 shadow-sm">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                            Fair Wages for Local Caretakers
+                        </span>
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-secondary/50 border border-border/40 gap-1.5 shadow-sm">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                            Trusted by Families Globally
+                        </span>
                     </motion.div>
                 </div>
             </div>
 
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0A1F16] via-transparent to-[#0A1F16]/80 pointer-events-none z-[3]" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/80 pointer-events-none z-[3]" />
         </div>
     );
 }

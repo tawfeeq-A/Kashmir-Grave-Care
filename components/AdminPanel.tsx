@@ -58,6 +58,11 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
   const [showNewPin, setShowNewPin] = useState(false);
 
   useEffect(() => {
+    // Freeze body scrolling on mount to prevent double scrollbar and background movement
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = 'hidden';
+    }
+
     // Check active session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
@@ -93,6 +98,13 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
       
       setContentData(populatedContent);
     }
+
+    return () => {
+      // Restore scrolling on unmount
+      if (typeof document !== 'undefined') {
+        document.body.style.overflow = '';
+      }
+    };
   }, [settings]);
 
   // Track changes
@@ -290,7 +302,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[200] bg-black/70 backdrop-blur-md p-4 overflow-y-auto flex items-start justify-center pt-10">
+    <div data-lenis-prevent className="fixed inset-0 z-[200] bg-black/70 backdrop-blur-md p-4 overflow-y-auto flex items-start justify-center pt-10">
       <div className="w-full max-w-4xl bg-[#0b120e] border border-border/40 rounded-3xl shadow-2xl overflow-hidden relative mb-10">
         <div className="flex justify-between items-center p-6 border-b border-border/20 bg-white/5">
           <div>
@@ -482,8 +494,29 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
 
               {activeTab === 'copy' && (
                 <div className="p-5 border border-primary/30 border-dashed rounded-2xl bg-primary/10 space-y-6">
-                  <h3 className="text-xl text-white">Website Text Editor</h3>
-                  <p className="text-xs text-white/40">All fields are pre-filled with default text. Edit any field to customize your website content. Clearing a field will revert to the default shown as placeholder text.</p>
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h3 className="text-xl text-white">Website Text Editor</h3>
+                      <p className="text-xs text-white/40 mt-1">All fields are pre-filled with default text. Edit any field to customize your website content. Clearing a field will revert to the default shown as placeholder text.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!confirm('Reset all website text fields to their default values? This will clear any custom text you have entered. You still need to press "Save Changes" to apply.')) return;
+                        const resetContent: Record<string, string> = {};
+                        for (const group of contentSchema) {
+                          for (const field of group.fields) {
+                            resetContent[field.key] = '';
+                          }
+                        }
+                        setContentData(resetContent);
+                        setHasChanges(true);
+                      }}
+                      className="shrink-0 px-4 py-2 text-xs font-bold uppercase tracking-wide text-amber-200 bg-amber-500/20 border border-amber-500/40 rounded-lg hover:bg-amber-500/30 transition-colors whitespace-nowrap"
+                    >
+                      Reset All to Defaults
+                    </button>
+                  </div>
                   <div className="max-h-[500px] overflow-y-auto pr-4 space-y-10 custom-scrollbar">
                     {contentSchema.map(group => (
                       <div key={group.id} className="space-y-4">

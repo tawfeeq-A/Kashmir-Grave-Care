@@ -2,7 +2,7 @@ import { Html, Head, Main, NextScript } from "next/document";
 
 export default function Document() {
   return (
-    <Html lang="en">
+    <Html lang="en" suppressHydrationWarning>
       <Head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -14,8 +14,24 @@ export default function Document() {
           name="description"
           content="Compassionate, professional grave care and restoration services in Kashmir. Connecting the diaspora to the resting places of their loved ones with routine maintenance, floral tributes, and virtual reports."
         />
+        {/* Favicons — logo */}
+        <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
+        <link rel="shortcut icon" href="/images/logo.jpg" />
+        {/* PWA manifest */}
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#1E5C45" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </Head>
       <body className="antialiased min-h-screen bg-background text-foreground selection:bg-primary/20 selection:text-primary">
+        {/* Prevent FOUC: apply dark class only if explicitly stored */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{if(localStorage.getItem("gck-theme")==="dark"){document.documentElement.classList.add("dark")}}catch(e){}})()`,
+          }}
+        />
         <Main />
         <NextScript />
       </body>

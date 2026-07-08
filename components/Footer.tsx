@@ -1,6 +1,6 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { Mail, Phone, MapPin, ShieldCheck, Check } from "lucide-react";
+import { Mail, Phone, MapPin, ShieldCheck, Check, Sun, Moon } from "lucide-react";
 import { useSite } from "@/context/SiteContext";
 import { supabase } from "@/lib/supabase";
 
@@ -10,6 +10,24 @@ export default function Footer({ onOpenAdmin }: { onOpenAdmin?: () => void }) {
   const currentYear = new Date().getFullYear();
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+  const [isDark, setIsDark] = useState(false);
+
+  // Theme: read from localStorage on mount
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains("dark"));
+  }, []);
+
+  const toggleTheme = () => {
+    const newDark = !isDark;
+    setIsDark(newDark);
+    if (newDark) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("gck-theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("gck-theme", "light");
+    }
+  };
 
   // Triple-tap logic for admin panel trigger
   const tapCountRef = useRef(0);
@@ -156,8 +174,9 @@ export default function Footer({ onOpenAdmin }: { onOpenAdmin?: () => void }) {
                   type="email"
                   placeholder="Email address"
                   required
+                  maxLength={160}
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value.slice(0, 160))}
                   className="w-full px-4 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 />
                 <button
@@ -183,10 +202,17 @@ export default function Footer({ onOpenAdmin }: { onOpenAdmin?: () => void }) {
               •
             </span> 
           </p>
-          <div className="flex space-x-6 mt-4 sm:mt-0">
+          <div className="flex items-center space-x-6 mt-4 sm:mt-0">
             <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-primary transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-primary transition-colors">Caretaker Ethics</a>
+            <button
+              onClick={toggleTheme}
+              className="inline-flex items-center gap-1.5 hover:text-primary transition-colors"
+              aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {isDark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+              <span>{isDark ? "Light" : "Dark"}</span>
+            </button>
           </div>
         </div>
       </div>

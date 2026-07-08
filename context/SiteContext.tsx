@@ -40,8 +40,6 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
 
   const fetchSettings = async () => {
     try {
-      setLoading(true);
-      
       const [settingsRes, mediaRes] = await Promise.all([
         supabase.from('site_settings').select('*').eq('id', 'main').single(),
         supabase.from('work_media').select('*').order('created_at', { ascending: false })
@@ -49,10 +47,16 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
 
       if (settingsRes.data) {
         setSettings(settingsRes.data);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('gck_settings', JSON.stringify(settingsRes.data));
+        }
       }
       
       if (mediaRes.data) {
         setWorkMedia(mediaRes.data);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('gck_media', JSON.stringify(mediaRes.data));
+        }
       }
     } catch (error) {
       console.error('Error fetching site data:', error);
@@ -62,6 +66,29 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    // Stale-While-Revalidate: load immediately from localStorage cache on client mount
+    if (typeof window !== 'undefined') {
+      const cachedSettings = localStorage.getItem('gck_settings');
+      const cachedMedia = localStorage.getItem('gck_media');
+      
+      if (cachedSettings) {
+        try {
+          setSettings(JSON.parse(cachedSettings));
+          setLoading(false); // cached data exists, disable block loader immediately
+        } catch (e) {
+          console.warn('Failed to parse cached settings:', e);
+        }
+      }
+      
+      if (cachedMedia) {
+        try {
+          setWorkMedia(JSON.parse(cachedMedia));
+        } catch (e) {
+          console.warn('Failed to parse cached media:', e);
+        }
+      }
+    }
+    
     fetchSettings();
   }, []);
 

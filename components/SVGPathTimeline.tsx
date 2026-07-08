@@ -26,153 +26,152 @@ export default function SVGPathTimeline({
   tagIcon,
 }: SVGPathTimelineProps) {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const pathRef = useRef<SVGPathElement>(null);
   const nodesRef = useRef<(HTMLDivElement | null)[]>([]);
-
   useEffect(() => {
-    const path = pathRef.current;
-    let pathTween: gsap.core.Tween | null = null;
+    if (!sectionRef.current) return;
+    const section = sectionRef.current;
 
-    if (path) {
-      const svgElement = path.closest("svg");
-      const isSvgVisible = svgElement && window.getComputedStyle(svgElement).display !== "none";
+    const ctx = gsap.context(() => {
+      const paths = section.querySelectorAll(".timeline-path");
 
-      if (isSvgVisible) {
+      paths.forEach((path) => {
         try {
-          const pathLength = path.getTotalLength();
+          const svgPath = path as SVGPathElement;
+          const pathLength = svgPath.getTotalLength();
           
           // Set initial state — path invisible
-          gsap.set(path, {
+          gsap.set(svgPath, {
             strokeDasharray: pathLength,
             strokeDashoffset: pathLength,
           });
 
           // Animate path drawing on scroll
-          pathTween = gsap.to(path, {
+          gsap.to(svgPath, {
             strokeDashoffset: 0,
             ease: "none",
             scrollTrigger: {
-              trigger: sectionRef.current,
-              start: "top 60%",
-              end: "bottom 40%",
-              scrub: 1,
+              trigger: svgPath,
+              start: "top 75%",
+              end: "bottom 55%",
+              scrub: true,
             },
           });
         } catch (e) {
           console.warn("Failed to get SVG path length:", e);
         }
-      }
-    }
-
-    // Animate each node's appearance
-    const nodeTweens = nodesRef.current.map((node, idx) => {
-      if (!node) return null;
-      gsap.set(node, { opacity: 0, y: 40 });
-      return gsap.to(node, {
-        opacity: 1,
-        y: 0,
-        duration: 0.6,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: node,
-          start: "top 80%",
-          toggleActions: "play none none reverse",
-        },
       });
-    });
+
+      // Animate each node's appearance
+      nodesRef.current.forEach((node) => {
+        if (!node) return;
+        gsap.set(node, { opacity: 0, y: 30 });
+        gsap.to(node, {
+          opacity: 1,
+          y: 0,
+          duration: 0.6,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: node,
+            start: "top 85%",
+            toggleActions: "play none none reverse",
+          },
+        });
+      });
+    }, sectionRef);
 
     return () => {
-      if (pathTween) {
-        pathTween.scrollTrigger?.kill();
-        pathTween.kill();
-      }
-      nodeTweens.forEach((t) => {
-        if (t) {
-          t.scrollTrigger?.kill();
-          t.kill();
-        }
-      });
+      ctx.revert();
     };
   }, [nodes.length]);
-
   return (
     <section
       ref={sectionRef}
-      className="py-20 bg-background border-b border-border/40 overflow-hidden"
+      className="py-14 sm:py-20 bg-background/80 backdrop-blur-md border-b border-border/40 overflow-hidden"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-20">
+        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-20">
           {sectionTag && (
             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary mb-3">
               {tagIcon} {sectionTag}
             </span>
           )}
           {sectionTitle && (
-            <h2 className="font-serif text-3xl font-bold sm:text-4xl text-foreground">
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold sm:text-4xl text-foreground">
               {sectionTitle}
             </h2>
           )}
           {sectionSubtitle && (
-            <p className="mt-4 text-muted-foreground max-w-2xl text-lg">
+            <p className="mt-3 sm:mt-4 text-muted-foreground max-w-2xl text-base sm:text-lg">
               {sectionSubtitle}
             </p>
           )}
         </div>
 
-        {/* Timeline with SVG path */}
-        <div className="relative max-w-4xl mx-auto">
-          {/* SVG S-Curve path (hidden on mobile, visible desktop) */}
-          <svg
-            className="absolute left-1/2 -translate-x-1/2 top-0 h-full w-16 hidden lg:block"
-            viewBox="0 0 60 800"
-            preserveAspectRatio="none"
-            fill="none"
-          >
-            <path
-              ref={pathRef}
-              d="M30 0 C30 100, 30 100, 30 200 C30 300, 30 300, 30 400 C30 500, 30 500, 30 600 C30 700, 30 700, 30 800"
-              stroke="hsl(var(--primary) / 0.4)"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-
+        {/* Timeline container */}
+        <div className="relative max-w-3xl mx-auto">
           {/* Timeline nodes */}
-          <div className="space-y-16 lg:space-y-24 relative">
+          <div className="space-y-0 relative z-10">
             {nodes.map((node, idx) => {
               const isLeft = idx % 2 === 0;
               return (
                 <div
                   key={idx}
                   ref={(el) => { nodesRef.current[idx] = el; }}
-                  className={`flex flex-col lg:flex-row items-center gap-6 lg:gap-12 ${
+                  className={`flex flex-row items-stretch gap-6 lg:gap-12 text-left ${
                     isLeft ? "lg:flex-row" : "lg:flex-row-reverse"
                   }`}
                 >
+                  {/* Node dot and connector column */}
+                  <div className="relative flex-shrink-0 z-10 order-1 lg:order-2 flex flex-col items-center">
+                    <div className="w-10 h-10 lg:w-14 lg:h-14 rounded-full bg-primary text-primary-foreground font-bold text-base lg:text-xl flex items-center justify-center shadow-lg shadow-primary/20 ring-4 ring-primary/10 transition-transform duration-300 hover:scale-110 shrink-0">
+                      {node.num}
+                    </div>
+                    {/* Active Sequential Path (Only show if not last step) */}
+                    {idx < nodes.length - 1 && (
+                      <div className="w-1 lg:w-2 grow flex justify-center py-2 min-h-[60px]">
+                        <svg
+                          className="w-full h-full text-primary/15"
+                          viewBox="0 0 4 100"
+                          preserveAspectRatio="none"
+                          fill="none"
+                        >
+                          <line
+                            x1="2"
+                            y1="0"
+                            x2="2"
+                            y2="100"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          />
+                          <path
+                            className="timeline-path"
+                            d="M2 0 L2 100"
+                            stroke="hsl(var(--primary))"
+                            strokeWidth="3.5"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Content */}
                   <div
-                    className={`flex-1 space-y-3 ${
-                      isLeft ? "lg:text-right" : "lg:text-left"
-                    } text-center`}
+                    className={`flex-1 space-y-2 lg:space-y-3 pb-12 order-2 ${
+                      isLeft ? "lg:order-1 lg:text-right" : "lg:order-3 lg:text-left"
+                    }`}
                   >
-                    <h3 className="text-xl font-bold text-foreground font-serif">
+                    <h3 className="text-lg lg:text-xl font-bold text-foreground font-serif">
                       {node.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed max-w-md mx-auto lg:mx-0">
+                    <p className="text-sm text-muted-foreground leading-relaxed max-w-md lg:mx-0">
                       {node.desc}
                     </p>
                   </div>
 
-                  {/* Center node dot */}
-                  <div className="relative flex-shrink-0">
-                    <div className="w-14 h-14 rounded-full bg-primary text-primary-foreground font-bold text-xl flex items-center justify-center shadow-lg shadow-primary/20 ring-4 ring-primary/10">
-                      {node.num}
-                    </div>
-                  </div>
-
-                  {/* Spacer for other side */}
-                  <div className="flex-1 hidden lg:block" />
+                  {/* Spacer (hidden on mobile, visible on desktop to push layout) */}
+                  <div className={`flex-1 hidden lg:block ${isLeft ? "lg:order-3" : "lg:order-1"}`} />
                 </div>
               );
             })}

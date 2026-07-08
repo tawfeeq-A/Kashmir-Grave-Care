@@ -1,0 +1,27 @@
+{
+  "name": "Grave Care Kashmir",
+  "short_name": "GraveCare",
+  "description": "Dignified grave care, cleaning, and restoration services in Kashmir for families worldwide.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f1210",
+  "theme_color": "#1E5C45",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["lifestyle", "utilities"],
+  "lang": "en",
+  "dir": "ltr"
+}
