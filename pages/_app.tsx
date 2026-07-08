@@ -36,7 +36,7 @@ export default function App({ Component, pageProps }: AppProps) {
     <SiteProvider>
       <Head>
         <title>Grave Care Kashmir | Preserving Peace &amp; Memories</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, interactive-widget=resizes-content" />
       </Head>
       <SmoothScroll>
         <MaskReveal>

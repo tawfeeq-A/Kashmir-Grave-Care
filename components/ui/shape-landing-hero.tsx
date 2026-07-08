@@ -91,7 +91,7 @@ function HeroGeometric({
     };
 
     return (
-        <div className="relative min-h-[100dvh] w-full flex items-center justify-center overflow-hidden bg-transparent pt-16 sm:pt-0">
+        <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-transparent pt-16 sm:pt-0">
             {/* Background Animations moved page-wide to index.tsx */}
 
             <div className="absolute inset-0 bg-gradient-to-br from-[#1E5C45]/[0.12] via-transparent to-[#C2841A]/[0.08] blur-3xl z-[1] pointer-events-none" />

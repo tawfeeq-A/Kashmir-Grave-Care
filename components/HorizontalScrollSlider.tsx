@@ -273,7 +273,7 @@ export default function HorizontalScrollSlider({
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden bg-background border-b border-border/40 h-[100dvh]"
+      className="relative overflow-hidden bg-background border-b border-border/40 h-screen"
     >
       <div className="flex flex-col h-full">
         {/* Header — clears the fixed navbar */}

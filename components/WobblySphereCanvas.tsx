@@ -280,32 +280,41 @@ export default function WobblySphereCanvas({
       currentScroll += (targetScroll - currentScroll) * 0.08;
       scrollSpeed = Math.abs(currentScroll - prevScroll);
       
+      // On phones the browser URL bar shows/hides on slow scroll, which resizes
+      // the viewport and makes scroll-linked transforms jump. So on mobile the
+      // sphere ignores scroll entirely and drifts on time alone (no zoom/jump).
+      const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+      const s = isMobile ? 0 : currentScroll;
+      const sSpeed = isMobile ? 0 : scrollSpeed;
+
       // Push parameters to GPU shaders
       material.uniforms.uTime.value = elapsedTime;
-      material.uniforms.uScroll.value = currentScroll;
-      material.uniforms.uScrollSpeed.value = scrollSpeed;
+      material.uniforms.uScroll.value = s;
+      material.uniforms.uScrollSpeed.value = sSpeed;
 
       // Use cached colors in WebGL tick
       material.uniforms.uColor1.value.copy(pColor);
       material.uniforms.uColor2.value.copy(aColor);
-      
-      // Dynamic multi-axis rotation responsive to elapsed time and scroll depth
-      mesh.rotation.y = elapsedTime * 0.12 + currentScroll * 1.8;
-      mesh.rotation.x = elapsedTime * 0.04 + currentScroll * 0.4;
-      
-      // Dynamic mobile-responsive 3D translation trajectory
-      const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-      const xRange = isMobile ? 0.7 : 1.7;
-      const yRange = isMobile ? 1.4 : 2.2;
-      
-      mesh.position.x = Math.cos(currentScroll * Math.PI * 2.5) * xRange;
-      mesh.position.y = (isMobile ? 0.5 : 1.0) - currentScroll * yRange + Math.sin(currentScroll * Math.PI * 3.0) * (isMobile ? 0.2 : 0.35);
-      mesh.position.z = Math.sin(currentScroll * Math.PI) * -0.8;
-      
-      // Dynamic scale
-      const scale = 1.0 + currentScroll * 0.3;
-      mesh.scale.set(scale, scale, scale);
-      
+
+      if (isMobile) {
+        // Calm, time-based drift — stable regardless of scroll / URL-bar resize
+        mesh.rotation.y = elapsedTime * 0.1;
+        mesh.rotation.x = elapsedTime * 0.04;
+        mesh.position.x = Math.cos(elapsedTime * 0.12) * 0.5;
+        mesh.position.y = 0.2 + Math.sin(elapsedTime * 0.14) * 0.22;
+        mesh.position.z = 0;
+        mesh.scale.set(1, 1, 1); // no scroll-linked enlarge on mobile
+      } else {
+        // Desktop: full scroll-reactive trajectory (unchanged)
+        mesh.rotation.y = elapsedTime * 0.12 + s * 1.8;
+        mesh.rotation.x = elapsedTime * 0.04 + s * 0.4;
+        mesh.position.x = Math.cos(s * Math.PI * 2.5) * 1.7;
+        mesh.position.y = 1.0 - s * 2.2 + Math.sin(s * Math.PI * 3.0) * 0.35;
+        mesh.position.z = Math.sin(s * Math.PI) * -0.8;
+        const scale = 1.0 + s * 0.3;
+        mesh.scale.set(scale, scale, scale);
+      }
+
       renderer.render(scene, camera);
       animId = requestAnimationFrame(tick);
     };
