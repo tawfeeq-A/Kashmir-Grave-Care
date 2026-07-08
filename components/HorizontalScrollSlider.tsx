@@ -181,8 +181,9 @@ export default function HorizontalScrollSlider({
     >
       {/* Pinned viewport: header in flow + track below */}
       <div className="flex flex-col h-full">
-        {/* Header — always visible, in normal flow, never moves */}
-        <div className="shrink-0 pt-16 sm:pt-14 lg:pt-12 px-4 sm:px-6 lg:px-8">
+        {/* Header — always visible, in normal flow. Top padding clears the
+            fixed navbar (~60px) so the green tag is never hidden behind it. */}
+        <div className="shrink-0 pt-20 sm:pt-24 lg:pt-28 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             {sectionTag && (
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary mb-1.5 sm:mb-2">
