@@ -1,6 +1,6 @@
 # 🧠 Grave Care Kashmir — Project Brain
 
-> **Last Updated**: 2026-07-08 (audit pass)  
+> **Last Updated**: 2026-07-09  
 > **Stack**: Next.js 14 + React 18 + TypeScript + Tailwind CSS 3 + Framer Motion + GSAP + Lenis + Three.js  
 > **Deployment**: Vercel (repo: github.com/tawfeeq-A/Kashmir-Grave-Care)  
 > **CMS**: Supabase (PostgreSQL) — RLS policies in `docs/supabase-rls.sql`  
@@ -43,8 +43,7 @@ grave-care-kashmir/
 │       ├── shape-landing-hero.tsx  # Geometric shapes hero
 │       └── dock-two.tsx     # Collapsible vertical side dock — adaptive dark-surface icons, auto-close
 ├── docs/
-│   ├── supabase-rls.sql     # RLS policies (run in Supabase SQL editor before go-live)
-│   └── supabase_schema.sql  # Full DB schema + seed script
+│   └── supabase-rls.sql     # RLS policies (run in Supabase SQL editor before go-live)
 ├── context/
 │   └── SiteContext.tsx      # React context — site_settings + work_media from Supabase
 ├── lib/
@@ -434,3 +433,21 @@ Hero → Emotional Intro → Services (bento) → Before/After → Process Timel
 - Panel widened `lg:max-w-6xl`, gap `lg:gap-20`, number `lg:text-[128px]`, title `lg:text-3xl xl:text-4xl`, desc `lg:text-lg lg:max-w-md`, image `lg:max-w-[460px]`, image aligned `md:justify-end` — fills horizontal space, less empty margin.
 
 Build clean (263 KB First Load JS). Committed + pushed to `main`. (Vercel auto-deploy remains disabled via vercel.json.)
+
+### 2026-07-09 — Green Tag Visibility Fix + Final Cleanup
+
+- **Eco header top padding fixed**: `pt-16 sm:pt-14 lg:pt-12` → `pt-20 sm:pt-24 lg:pt-28`. The green tag "Eco-Conscious & Ethical Custodianship" was being clipped behind the fixed navbar (~60px). The padding now *increases* with screen size and always clears the navbar.
+- **Removed `docs/supabase_schema.sql`** (old 307-line schema+seed file, superseded by the current `docs/supabase-rls.sql`).
+- **Removed stale local directories**: `src/` (empty, never tracked), `scripts/` (empty), `tsconfig.tsbuildinfo` (generated artifact).
+- **brain.md refreshed**: project structure updated to reflect current reality (all deletions, correct paths for docs/icons/manifest/sw.js/vercel.json).
+
+---
+
+## 🚀 Deployment Checklist (before go-live)
+
+1. **Run `docs/supabase-rls.sql`** in Supabase SQL Editor. Verify anon cannot read `contact_submissions` / `newsletter_subscriptions`.
+2. **Verify RPC security**: `verify_recovery_pin` / `update_recovery_pin` must be `SECURITY DEFINER` and only return booleans.
+3. **Deploy**: Vercel auto-deploy is OFF. Use `vercel deploy --prod` (CLI) or the Vercel dashboard "Create Deployment" button.
+4. **Set env vars on Vercel**: `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+5. **Verify PWA**: open site on mobile Chrome → should show "Add to Home Screen" prompt after 2 visits.
+6. **Test admin**: triple-tap footer `•` → login with email/password → verify content edits save and "Reset All to Defaults" works.
