@@ -167,11 +167,46 @@ export default function HorizontalScrollSlider({
           )}
         </div>
 
-        {/* Swipeable carousel */}
-        <div
-          ref={carouselRef}
-          className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-        >
+        {/* Swipeable carousel with navigation arrows */}
+        <div className="relative">
+          {/* Left arrow */}
+          <button
+            onClick={() => {
+              const prev = Math.max(0, activeIndex - 1);
+              carouselRef.current?.scrollTo({
+                left: prev * (carouselRef.current?.offsetWidth || 0),
+                behavior: "smooth",
+              });
+            }}
+            className={`absolute left-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-background/90 border border-border/60 shadow-md flex items-center justify-center text-foreground/70 hover:text-foreground transition-all ${
+              activeIndex === 0 ? "opacity-30 pointer-events-none" : "opacity-100"
+            }`}
+            aria-label="Previous slide"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+
+          {/* Right arrow */}
+          <button
+            onClick={() => {
+              const next = Math.min(slides.length - 1, activeIndex + 1);
+              carouselRef.current?.scrollTo({
+                left: next * (carouselRef.current?.offsetWidth || 0),
+                behavior: "smooth",
+              });
+            }}
+            className={`absolute right-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-background/90 border border-border/60 shadow-md flex items-center justify-center text-foreground/70 hover:text-foreground transition-all ${
+              activeIndex === slides.length - 1 ? "opacity-30 pointer-events-none" : "opacity-100"
+            }`}
+            aria-label="Next slide"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+
+          <div
+            ref={carouselRef}
+            className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          >
           {slides.map((slide, idx) => (
             <div
               key={idx}
@@ -205,6 +240,7 @@ export default function HorizontalScrollSlider({
               </div>
             </div>
           ))}
+          </div>
         </div>
 
         {/* Dot indicators */}
