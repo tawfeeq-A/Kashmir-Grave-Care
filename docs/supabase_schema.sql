@@ -1,9 +1,6 @@
 -- =========================================================================
 -- GRAVE CARE KASHMIR - COMPLETE SUPABASE SQL SCHEMA AND SEED SCRIPT
 -- =========================================================================
--- Run this entire script in your Supabase SQL Editor (https://supabase.com)
--- to initialize or align the database schema with the website fields.
--- =========================================================================
 
 -- Enable pgcrypto for password/PIN hashing
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
@@ -59,7 +56,7 @@ CREATE TABLE IF NOT EXISTS newsletter_subscriptions (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 5. RECOVERY PINS TABLE (FOR ADMIN PANEL READ-ONLY LOCKING)
+-- 5. RECOVERY PINS TABLE
 CREATE TABLE IF NOT EXISTS recovery_pins (
     id INT PRIMARY KEY DEFAULT 1 CHECK (id = 1),
     pin_hash TEXT NOT NULL,
@@ -70,49 +67,56 @@ CREATE TABLE IF NOT EXISTS recovery_pins (
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- =========================================================================
 
--- Enable RLS on all tables
 ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE work_media ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contact_submissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE newsletter_subscriptions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE recovery_pins ENABLE ROW LEVEL SECURITY; -- Keep strictly locked down
+ALTER TABLE recovery_pins ENABLE ROW LEVEL SECURITY;
 
 -- Site Settings Policies
-CREATE POLICY "Allow public read on site_settings" 
+DROP POLICY IF EXISTS "Allow public read on site_settings" ON site_settings;
+CREATE POLICY "Allow public read on site_settings"
 ON site_settings FOR SELECT USING (true);
 
-CREATE POLICY "Allow authenticated update on site_settings" 
+DROP POLICY IF EXISTS "Allow authenticated update on site_settings" ON site_settings;
+CREATE POLICY "Allow authenticated update on site_settings"
 ON site_settings FOR UPDATE TO authenticated USING (true);
 
 -- Work Media Policies
-CREATE POLICY "Allow public read on work_media" 
+DROP POLICY IF EXISTS "Allow public read on work_media" ON work_media;
+CREATE POLICY "Allow public read on work_media"
 ON work_media FOR SELECT USING (true);
 
-CREATE POLICY "Allow authenticated insert on work_media" 
+DROP POLICY IF EXISTS "Allow authenticated insert on work_media" ON work_media;
+CREATE POLICY "Allow authenticated insert on work_media"
 ON work_media FOR INSERT TO authenticated WITH CHECK (true);
 
-CREATE POLICY "Allow authenticated delete on work_media" 
+DROP POLICY IF EXISTS "Allow authenticated delete on work_media" ON work_media;
+CREATE POLICY "Allow authenticated delete on work_media"
 ON work_media FOR DELETE TO authenticated USING (true);
 
 -- Contact Submissions Policies
-CREATE POLICY "Allow public insert on contact_submissions" 
+DROP POLICY IF EXISTS "Allow public insert on contact_submissions" ON contact_submissions;
+CREATE POLICY "Allow public insert on contact_submissions"
 ON contact_submissions FOR INSERT TO anon, authenticated WITH CHECK (true);
 
-CREATE POLICY "Allow authenticated read on contact_submissions" 
+DROP POLICY IF EXISTS "Allow authenticated read on contact_submissions" ON contact_submissions;
+CREATE POLICY "Allow authenticated read on contact_submissions"
 ON contact_submissions FOR SELECT TO authenticated USING (true);
 
 -- Newsletter Policies
-CREATE POLICY "Allow public insert on newsletter_subscriptions" 
+DROP POLICY IF EXISTS "Allow public insert on newsletter_subscriptions" ON newsletter_subscriptions;
+CREATE POLICY "Allow public insert on newsletter_subscriptions"
 ON newsletter_subscriptions FOR INSERT TO anon, authenticated WITH CHECK (true);
 
-CREATE POLICY "Allow authenticated read on newsletter_subscriptions" 
+DROP POLICY IF EXISTS "Allow authenticated read on newsletter_subscriptions" ON newsletter_subscriptions;
+CREATE POLICY "Allow authenticated read on newsletter_subscriptions"
 ON newsletter_subscriptions FOR SELECT TO authenticated USING (true);
 
 -- =========================================================================
 -- DATABASE FUNCTIONS / RPC
 -- =========================================================================
 
--- Function: Verify Recovery PIN
 CREATE OR REPLACE FUNCTION verify_recovery_pin(pin TEXT)
 RETURNS BOOLEAN
 SECURITY DEFINER
@@ -120,16 +124,13 @@ AS $$
 DECLARE
   is_valid BOOLEAN;
 BEGIN
-  -- Checks if stored hash matches hashed input or matches plain comparison (fallback)
   SELECT (pin_hash = crypt(pin, pin_hash) OR pin_hash = pin) INTO is_valid
   FROM recovery_pins
   WHERE id = 1;
-  
   RETURN COALESCE(is_valid, FALSE);
 END;
 $$ LANGUAGE plpgsql;
 
--- Function: Update Recovery PIN
 CREATE OR REPLACE FUNCTION update_recovery_pin(old_pin TEXT, new_pin TEXT)
 RETURNS BOOLEAN
 SECURITY DEFINER
@@ -137,19 +138,14 @@ AS $$
 DECLARE
   pin_valid BOOLEAN;
 BEGIN
-  -- Verify current PIN first
   SELECT verify_recovery_pin(old_pin) INTO pin_valid;
-  
   IF NOT pin_valid THEN
     RETURN FALSE;
   END IF;
-
-  -- Hash and update with the new PIN
   UPDATE recovery_pins
   SET pin_hash = crypt(new_pin, gen_salt('bf')),
       updated_at = NOW()
   WHERE id = 1;
-  
   RETURN TRUE;
 END;
 $$ LANGUAGE plpgsql;
@@ -158,17 +154,17 @@ $$ LANGUAGE plpgsql;
 -- SEED DATA INITIALIZATION
 -- =========================================================================
 
--- Seed site_settings single main row with exact default content schema
 INSERT INTO site_settings (id, brand_name, whatsapp_number, hero_title, hero_subtitle, cta_title, cta_text, content_json)
 VALUES (
   'main',
   'Grave Care Kashmir',
   '917006830501',
-  'Your Family''s Resting Place, Maintained with Dignity.',
-  'We clean, align, and restore graves for families who want to keep resting places in proper condition. Our work spans across Srinagar and qabristans.',
-  'Let us care for their resting place.',
-  'Send us a message. We will listen to your wishes and carefully coordinate every detail to bring you comfort.',
-  '{
+  $tag$Your Family's Resting Place, Maintained with Dignity.$tag$,
+  $tag$We clean, align, and restore graves for families who want to keep resting places in proper condition. Our work spans across Srinagar and qabristans.$tag$,
+  $tag$Let us care for their resting place.$tag$,
+  $tag$Send us a message. We will listen to your wishes and carefully coordinate every detail to bring you comfort.$tag$,
+  $json$
+  {
     "eyebrow": "Grave maintenance done with care and precision.",
     "heroWhatsappButton": "Chat on WhatsApp",
     "heroWorkButton": "See our work",
@@ -176,14 +172,14 @@ VALUES (
     "servicesHeading": "What we do.",
     "servicesSubtext": "Every job starts with a WhatsApp message. We confirm details by call before any work begins.",
     "serviceOneTitle": "Gentle Routine Care",
-    "serviceOneText": "Ongoing, tender maintenance ensuring your loved one''s resting place is always neat, clear of weeds, and thoughtfully preserved.",
+    "serviceOneText": "Ongoing, tender maintenance ensuring your loved one's resting place is always neat, clear of weeds, and thoughtfully preserved.",
     "serviceTwoTitle": "Complete Restoration",
     "serviceTwoText": "A respectful overhaul for weathered graves, featuring deep marble cleaning, stain removal, and re-inking of faded calligraphy.",
     "serviceThreeTitle": "Spiritual Visitations",
     "serviceThreeText": "Honoring their memory on special dates with thorough cleaning, Quran recitation by a local Qari, and live video presence.",
     "beforeAfterTag": "High Standards of Restoration",
     "beforeAfterHeading": "See the Care and Detail in Our Work",
-    "beforeAfterText": "Weathering in Kashmir''s winters can cause marble staining, moss growth, and name engraving decay. Our professional team performs delicate chemical-free cleaning, re-painting of Arabic and Persian calligraphies, and complete landscaping.",
+    "beforeAfterText": "Weathering in Kashmir's winters can cause marble staining, moss growth, and name engraving decay. Our professional team performs delicate chemical-free cleaning, re-painting of Arabic and Persian calligraphies, and complete landscaping.",
     "beforeAfterBullet1": "Delicate stain removal from premium marble",
     "beforeAfterBullet2": "Weed extraction & maintaining neat local climate-ready grass",
     "beforeAfterBullet3": "Calligraphy re-inking (Gold, Black, or White paint)",
@@ -234,17 +230,17 @@ VALUES (
     "aboutOurStoryHeading": "Serving Across Kashmir",
     "aboutOurStoryText1": "Grave Care Kashmir began with a simple, deeply personal realization. Many families, separated by oceans and borders, carry a quiet heartache knowing they cannot regularly visit or maintain the resting places of their loved ones in Kashmir.",
     "aboutOurStoryText2": "We understand that tending to a grave is an act of profound love. When distance prevents you from being there, we step in to fulfill that duty. We treat every resting place with the utmost reverence, as if it belonged to our own family.",
-    "aboutOurStoryText3": "Our mission is not just maintenance; it is providing peace of mind. We want you to feel connected, knowing that your loved one''s memory is honored in a beautiful, well-cared-for space.",
+    "aboutOurStoryText3": "Our mission is not just maintenance; it is providing peace of mind. We want you to feel connected, knowing that your loved one's memory is honored in a beautiful, well-cared-for space.",
     "aboutCemeteriesHeading": "Srinagar Cemeteries We Regularly Serve",
     "cemetery1Name": "Malkhah Cemetery (Rainawari / Eidgah)",
-    "cemetery1Tag": "Srinagar''s Largest",
+    "cemetery1Tag": "Srinagar's Largest",
     "cemetery2Name": "Hazratbal Shrine Graveyard",
     "cemetery2Tag": "Serene Lakeside",
     "cemetery3Name": "Naqshband Sahib Cemetery",
     "cemetery3Tag": "Heritage Site",
     "servicesPageTag": "Transparent Care Services",
     "servicesPageHeading": "Our Maintenance & Restoration Services",
-    "servicesPageSubtext": "We offer flexible programs and specialized custom treatments to fit your family''s needs. Pricing varies based on grave size, location, and condition.",
+    "servicesPageSubtext": "We offer flexible programs and specialized custom treatments to fit your family's needs. Pricing varies based on grave size, location, and condition.",
     "pkg1Name": "Gentle Routine Care",
     "pkg1Tag": "Ongoing respect & general maintenance",
     "pkg1Desc": "Ideal for maintaining neatness, keeping the grass trimmed, and routine cleanliness on a regular schedule to honor their resting place.",
@@ -300,11 +296,12 @@ VALUES (
     "newsletterText": "Subscribe to receive updates regarding cemetery conditions, seasonal plantation schedules, and community graveyard support projects in Kashmir.",
     "seoTitle": "Grave Care Kashmir | Grave Maintenance in Srinagar",
     "seoDescription": "Professional grave maintenance in Srinagar. We clean, align, restore and maintain graves with care. Contact us on WhatsApp to start."
-  }'::jsonb
+  }
+  $json$::jsonb
 )
 ON CONFLICT (id) DO NOTHING;
 
--- Seed default Recovery PIN (default is '1234' - change this immediately!)
+-- Seed default Recovery PIN (change '1234' immediately after first run)
 INSERT INTO recovery_pins (id, pin_hash)
 VALUES (1, crypt('1234', gen_salt('bf')))
 ON CONFLICT (id) DO NOTHING;

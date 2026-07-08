@@ -15,56 +15,54 @@
 ```
 grave-care-kashmir/
 ├── pages/
-│   ├── _app.tsx            # App wrapper — SmoothScroll + MaskReveal + Navbar + Footer + AdminPanel
-│   ├── _document.tsx       # HTML document — Google Fonts (Outfit, Inter, Playfair Display, Noto Nastaliq Urdu)
-│   ├── index.tsx           # Homepage (redesigned 07-08) — Hero → Emotional Intro (split w/ image) → Services (bento) → Before/After → SVGPathTimeline → AnimatedCounters → HorizontalScrollSlider → Final CTA
-│   ├── about.tsx           # About page — Story, Pillars, Cemeteries served
+│   ├── _app.tsx            # App wrapper — SmoothScroll + MaskReveal + page transitions + SideDock + AdminPanel
+│   ├── _document.tsx       # HTML — fonts, favicon, PWA manifest, theme-init, security meta
+│   ├── index.tsx           # Homepage — Hero → Intro (image + text) → Services → Before/After → Timeline → Stats → Eco Horizontal Scroll → CTA
+│   ├── about.tsx           # About — Story, Pillars, Cemeteries served
 │   ├── services.tsx        # Services & pricing — 3 packages + custom addons + WorkGallery
 │   ├── work.tsx            # Portfolio gallery — Instagram/Facebook media from Supabase
-│   └── contact.tsx         # Multi-step booking form (4 steps) — saves to Supabase + WhatsApp/email
+│   └── contact.tsx         # Multi-step booking form (4 steps) — Supabase + WhatsApp/email
 ├── components/
-│   ├── SmoothScroll.tsx     # Lenis smooth scroll wrapper synced with GSAP ScrollTrigger
-│   ├── ParticleCanvas.tsx   # Canvas-based floating particles (emerald/gold/white)
-│   ├── ScrollReveal.tsx     # GSAP ScrollTrigger-powered scroll reveal (up/down/left/right/scale/fade)
-│   ├── MaskReveal.tsx       # Page entrance mask animation (clip-path circle reveal)
-│   ├── HorizontalScrollSlider.tsx  # GSAP pinned horizontal scroll (rebuilt 07-08, all devices) + reduced-motion swipe fallback
-│   ├── SVGPathTimeline.tsx  # Scroll-drawn SVG path timeline with alternating nodes
-│   ├── ExpandingPanels.tsx  # Interactive accordion panels (one active, rest contracted)
-│   ├── AnimatedCounters.tsx # Circular SVG gauge counters — IntersectionObserver + rAF count-up (07-08)
+│   ├── SmoothScroll.tsx     # Lenis ↔ GSAP ScrollTrigger sync
+│   ├── ParticleCanvas.tsx   # 2D particles — reduced-motion + tab-hidden pause; dynamic-imported
 │   ├── WobblySphereCanvas.tsx # 3D wave sphere (IcosahedronGeometry 32) — reduced-motion + tab-hidden pause; dynamic-imported
-│   ├── ParticleCanvas.tsx   # 2D particles — reduced-motion + tab-hidden pause, pointer-events-none; dynamic-imported
-│   ├── Navbar.tsx           # Minimal fixed navbar — logo (left) + social icons (right). No nav links / hamburger
-│   ├── SideDock.tsx         # Router-wired wrapper for the collapsible vertical side dock (nav + WhatsApp)
-│   ├── Footer.tsx           # Footer + monumental text + dark-mode toggle + newsletter (email maxLength 160)
-│   ├── ImageBeforeAfter.tsx # Interactive before/after image slider (raw img, clip-path)
+│   ├── ScrollReveal.tsx     # GSAP ScrollTrigger scroll reveal (multi-direction)
+│   ├── MaskReveal.tsx       # Page entrance mask animation
+│   ├── HorizontalScrollSlider.tsx  # GSAP pinned horizontal scroll — snap on mobile, smooth on desktop (gsap.matchMedia)
+│   ├── SVGPathTimeline.tsx  # Scroll-drawn SVG timeline with sequential path connectors
+│   ├── AnimatedCounters.tsx # IntersectionObserver + rAF count-up (no GSAP dependency)
+│   ├── Navbar.tsx           # Minimal fixed navbar — logo + social icons only
+│   ├── SideDock.tsx         # Router-wired collapsible vertical side dock (nav + WhatsApp)
+│   ├── Footer.tsx           # Footer + monumental text + dark-mode toggle + newsletter
+│   ├── ImageBeforeAfter.tsx # Interactive before/after image slider (clip-path)
 │   ├── Scroll3DTilt.tsx     # Scroll-based 3D perspective tilt (Framer Motion)
-│   ├── WorkGallery.tsx      # Work media grid from Supabase (external URLs → raw img)
-│   ├── AdminPanel.tsx       # Full admin panel (triple-tap from footer) + "Reset All to Defaults"
-│   ├── ProgressBar.tsx      # Scroll progress bar — ref+rAF DOM write (no per-frame React re-render)
+│   ├── WorkGallery.tsx      # Work media grid from Supabase
+│   ├── AdminPanel.tsx       # Admin panel (triple-tap from footer) + "Reset All to Defaults"
+│   ├── ProgressBar.tsx      # Scroll progress bar — ref + rAF DOM write
 │   └── ui/
 │       ├── shape-landing-hero.tsx  # Geometric shapes hero
-│       └── dock-two.tsx     # Collapsible vertical side dock (right edge) — burger→expand, tooltips to the left
-│   # DELETED 07-08 audit: OrbitalHero(.tsx/.module.css), HoverFocusGrid, ExpandingPanels, Reveal, WhatsAppButton
+│       └── dock-two.tsx     # Collapsible vertical side dock — adaptive dark-surface icons, auto-close
 ├── docs/
-│   └── supabase-rls.sql     # RLS policies to run in Supabase SQL editor (run before go-live)
+│   ├── supabase-rls.sql     # RLS policies (run in Supabase SQL editor before go-live)
+│   └── supabase_schema.sql  # Full DB schema + seed script
 ├── context/
-│   └── SiteContext.tsx      # React context — fetches site_settings + work_media from Supabase
+│   └── SiteContext.tsx      # React context — site_settings + work_media from Supabase
 ├── lib/
-│   ├── supabase.ts          # Supabase client initialization
-│   ├── utils.ts             # Utility functions (cn for class merging)
-│   └── contentSchema.ts     # Content JSON schema definition
+│   ├── supabase.ts          # Supabase client
+│   ├── utils.ts             # cn() utility
+│   └── contentSchema.ts     # Admin content JSON schema + defaults
 ├── styles/
-│   └── globals.css          # Global styles — CSS variables, keyframes, utilities, dark mode
-└── public/
-    └── images/
-        ├── logo.jpg
-        ├── kashmir-cemetery.png
-        ├── grave-before-final.jpg
-        ├── grave-after-final.jpg
-        ├── eco_caretaker_wages.png
-        ├── eco_organic_soil.png
-        ├── eco_cemetery_heritage.png
-        └── eco_gps_reporting.png
+│   └── globals.css          # Design system: tokens, glass, shadows, animations, reduced-motion
+├── public/
+│   ├── icons/               # icon-192.png, icon-512.png (PWA)
+│   ├── images/              # logo.jpg, kashmir-cemetery.png, grave-*.jpg, eco_*.webp
+│   ├── manifest.json        # PWA manifest
+│   └── sw.js                # Service worker (same-origin, network-first)
+├── vercel.json              # git.deploymentEnabled: false (manual deploy only)
+├── next.config.js           # AVIF/WebP images, security headers
+├── tailwind.config.ts       # CSS-variable colors, accordion animation
+├── package.json             # Next.js 14, React 18, Framer Motion, GSAP, Three.js, Lenis
+└── brain.md                 # This file — project source of truth
 ```
 
 ---
