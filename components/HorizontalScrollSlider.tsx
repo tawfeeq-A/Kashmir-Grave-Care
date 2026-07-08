@@ -27,47 +27,45 @@ export default function HorizontalScrollSlider({
 }: HorizontalScrollSliderProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
+  // Detect mobile on mount + resize
   useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // ─── DESKTOP: GSAP pinned horizontal scroll (unchanged) ───
+  useEffect(() => {
+    if (isMobile) return;
     const section = sectionRef.current;
     const track = trackRef.current;
     if (!section || !track) return;
 
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReduced) {
-      setReducedMotion(true);
-      return;
-    }
+    if (prefersReduced) return;
 
-    const getDistance = () => Math.max(0, track.scrollWidth - window.innerWidth);
-    const lastIndex = Math.max(1, slides.length - 1);
+    const mm = gsap.matchMedia();
+    mm.add("(min-width: 768px)", () => {
+      const getDistance = () => Math.max(0, track.scrollWidth - window.innerWidth);
+      const lastIndex = Math.max(1, slides.length - 1);
 
-    // Shared pinned horizontal-scroll config. `withSnap` = per-frame settle.
-    const buildTween = (withSnap: boolean) =>
       gsap.to(track, {
         x: () => -getDistance(),
         ease: "none",
         scrollTrigger: {
           trigger: section,
-          start: "top top", // pin exactly when the green tag (section top) reaches the top
+          start: "top top",
           end: () => "+=" + getDistance(),
           pin: true,
           pinSpacing: true,
           scrub: 1,
           anticipatePin: 1,
           invalidateOnRefresh: true,
-          ...(withSnap
-            ? {
-                snap: {
-                  snapTo: 1 / lastIndex,
-                  duration: { min: 0.2, max: 0.5 },
-                  delay: 0.06,
-                  ease: "power1.inOut",
-                },
-              }
-            : {}),
           onUpdate: (self) => {
             const idx = Math.round(self.progress * lastIndex);
             setActiveIndex((prev) => (prev === idx ? prev : idx));
@@ -75,33 +73,37 @@ export default function HorizontalScrollSlider({
         },
       });
 
-    // Responsive: per-frame SNAP only on phones; smooth continuous scrub on
-    // tablet / laptop / desktop. matchMedia auto-rebuilds + cleans up on resize.
-    const mm = gsap.matchMedia();
-    mm.add("(max-width: 767px)", () => {
-      buildTween(true);
+      const imgs = Array.from(track.querySelectorAll("img"));
+      imgs.forEach((img) => {
+        if (!img.complete) {
+          img.addEventListener("load", () => ScrollTrigger.refresh(), { once: true });
+        }
+      });
+      requestAnimationFrame(() => ScrollTrigger.refresh());
     });
-    mm.add("(min-width: 768px)", () => {
-      buildTween(false);
-    });
-
-    // Recalculate pin length once images finish loading (affects measurements)
-    const imgs = Array.from(track.querySelectorAll("img"));
-    imgs.forEach((img) => {
-      if (!img.complete) {
-        img.addEventListener("load", () => ScrollTrigger.refresh(), { once: true });
-      }
-    });
-    requestAnimationFrame(() => ScrollTrigger.refresh());
 
     return () => mm.revert();
-  }, [slides.length]);
+  }, [slides.length, isMobile]);
 
+  // ─── MOBILE: Track active slide via scroll snap ───
+  useEffect(() => {
+    if (!isMobile || !carouselRef.current) return;
+    const el = carouselRef.current;
+    const handleScroll = () => {
+      const scrollLeft = el.scrollLeft;
+      const slideWidth = el.offsetWidth;
+      const idx = Math.round(scrollLeft / slideWidth);
+      setActiveIndex(idx);
+    };
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [isMobile]);
+
+  // ─── Shared slide content (both layouts use this) ───
   const Panel = (slide: SlideData, idx: number, active: boolean) => (
     <div className="max-w-5xl lg:max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-8 lg:gap-20 items-center">
       {/* Number + Title inline + Description */}
       <div className="space-y-1.5 sm:space-y-4 lg:space-y-7 order-2 md:order-1 text-center md:text-left">
-        {/* Number and title on same line */}
         <div className="flex items-baseline justify-center md:justify-start gap-2 sm:gap-3 lg:gap-5">
           <span
             className="font-serif text-[24px] sm:text-[48px] lg:text-[128px] leading-none font-bold bg-clip-text text-transparent select-none shrink-0"
@@ -125,11 +127,11 @@ export default function HorizontalScrollSlider({
       {/* Image */}
       <div className="flex justify-center md:justify-end items-center order-1 md:order-2">
         {slide.imageSrc ? (
-          <div className="w-full max-w-[240px] sm:max-w-[300px] lg:max-w-[460px] aspect-[4/5] sm:aspect-square rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl border border-border/70 bg-secondary relative group">
+          <div className="w-full max-w-[220px] sm:max-w-[300px] lg:max-w-[460px] aspect-[4/5] sm:aspect-square rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl border border-border/70 bg-secondary relative group">
             <img
               src={slide.imageSrc}
               alt={slide.title}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              className="w-full h-full object-cover"
               loading="lazy"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
@@ -145,44 +147,100 @@ export default function HorizontalScrollSlider({
     </div>
   );
 
-  // ─── Reduced-motion fallback ───
-  if (reducedMotion) {
+  // ═══════════════════════════════════════════════════
+  // MOBILE: Native CSS-snap carousel (no GSAP, no pin, no scroll hijack)
+  // ═══════════════════════════════════════════════════
+  if (isMobile) {
     return (
-      <section className="relative bg-background border-b border-border/40 py-16 sm:py-20 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+      <section className="relative bg-background border-b border-border/40 py-12 overflow-hidden">
+        {/* Header */}
+        <div className="px-4 mb-6">
           {sectionTag && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary mb-3">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary mb-2">
               {tagIcon} {sectionTag}
             </span>
           )}
           {sectionTitle && (
-            <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground">
+            <h2 className="font-serif text-xl font-bold text-foreground">
               {sectionTitle}
             </h2>
           )}
         </div>
-        <div className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+
+        {/* Swipeable carousel */}
+        <div
+          ref={carouselRef}
+          className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        >
           {slides.map((slide, idx) => (
-            <div key={idx} className="w-full shrink-0 snap-center px-6 sm:px-10 lg:px-16">
-              {Panel(slide, idx, idx === activeIndex)}
+            <div
+              key={idx}
+              className="w-full shrink-0 snap-center px-4"
+            >
+              {/* Card layout for mobile carousel */}
+              <div className="bg-secondary/20 rounded-2xl border border-border/50 p-5 space-y-4">
+                {/* Image */}
+                {slide.imageSrc && (
+                  <div className="w-full aspect-[4/3] rounded-xl overflow-hidden border border-border/60 bg-secondary">
+                    <img
+                      src={slide.imageSrc}
+                      alt={slide.title}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+                {/* Text */}
+                <div className="flex items-baseline gap-3">
+                  <span className="font-serif text-2xl font-bold text-primary/30 select-none">
+                    {slide.num}
+                  </span>
+                  <h3 className="text-base font-bold text-foreground font-serif">
+                    {slide.title}
+                  </h3>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {slide.desc}
+                </p>
+              </div>
             </div>
           ))}
         </div>
-        <p className="mt-6 text-center text-xs text-muted-foreground">Swipe to explore</p>
+
+        {/* Dot indicators */}
+        <div className="flex items-center justify-center gap-2 mt-5">
+          {slides.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => {
+                carouselRef.current?.scrollTo({
+                  left: idx * (carouselRef.current?.offsetWidth || 0),
+                  behavior: "smooth",
+                });
+              }}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                idx === activeIndex
+                  ? "bg-primary w-6"
+                  : "bg-border hover:bg-muted-foreground/40"
+              }`}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
+          ))}
+        </div>
       </section>
     );
   }
 
-  // ─── Default: GSAP pinned horizontal scroll ───
+  // ═══════════════════════════════════════════════════
+  // DESKTOP/TABLET: GSAP pinned horizontal scroll (unchanged from working version)
+  // ═══════════════════════════════════════════════════
   return (
     <section
       ref={sectionRef}
       className="relative overflow-hidden bg-background border-b border-border/40 h-[100dvh]"
     >
-      {/* Pinned viewport: header in flow + track below */}
       <div className="flex flex-col h-full">
-        {/* Header — always visible, in normal flow. Top padding clears the
-            fixed navbar (~60px) so the green tag is never hidden behind it. */}
+        {/* Header — clears the fixed navbar */}
         <div className="shrink-0 pt-20 sm:pt-24 lg:pt-28 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             {sectionTag && (
@@ -198,7 +256,7 @@ export default function HorizontalScrollSlider({
           </div>
         </div>
 
-        {/* Horizontal track — fills remaining vertical space */}
+        {/* Horizontal track */}
         <div
           ref={trackRef}
           className="flex flex-1 min-h-0"
@@ -214,7 +272,7 @@ export default function HorizontalScrollSlider({
           ))}
         </div>
 
-        {/* Progress indicator — always visible at bottom */}
+        {/* Progress indicator */}
         <div className="shrink-0 pb-4 sm:pb-6 flex items-center justify-center gap-4">
           <span className="text-xs sm:text-sm font-mono text-muted-foreground">
             {String(activeIndex + 1).padStart(2, "0")}

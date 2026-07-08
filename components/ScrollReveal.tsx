@@ -36,13 +36,19 @@ export default function ScrollReveal({
     if (!ref.current) return;
     const el = ref.current;
 
+    // On mobile, reduce distance to prevent jarring layout jumps.
+    // The element still fades in, just with less vertical travel.
+    const isMobileDevice = window.innerWidth < 768;
+    const actualDistance = isMobileDevice ? Math.min(distance, 24) : distance;
+    const actualDuration = isMobileDevice ? Math.min(duration, 0.6) : duration;
+
     const ctx = gsap.context(() => {
       const targets = stagger > 0 ? el.children : el;
 
       const fromVars: gsap.TweenVars = { opacity: 0 };
       const toVars: gsap.TweenVars = {
         opacity: 1,
-        duration,
+        duration: actualDuration,
         delay,
         ease: "power3.out",
         stagger: stagger > 0 ? stagger : undefined,
@@ -50,23 +56,23 @@ export default function ScrollReveal({
 
       switch (direction) {
         case "up":
-          fromVars.y = distance;
+          fromVars.y = actualDistance;
           toVars.y = 0;
           break;
         case "down":
-          fromVars.y = -distance;
+          fromVars.y = -actualDistance;
           toVars.y = 0;
           break;
         case "left":
-          fromVars.x = distance;
+          fromVars.x = actualDistance;
           toVars.x = 0;
           break;
         case "right":
-          fromVars.x = -distance;
+          fromVars.x = -actualDistance;
           toVars.x = 0;
           break;
         case "scale":
-          fromVars.scale = 0.85;
+          fromVars.scale = 0.92;
           toVars.scale = 1;
           break;
         case "fade":
@@ -78,7 +84,7 @@ export default function ScrollReveal({
 
       ScrollTrigger.create({
         trigger: el,
-        start: "top 85%",
+        start: isMobileDevice ? "top 90%" : "top 85%",
         once,
         onEnter: () => {
           gsap.to(targets, toVars);
