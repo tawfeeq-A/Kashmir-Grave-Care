@@ -65,7 +65,7 @@ function DockIconButton({
   )
 
   const classes = cn(
-    "relative group p-2.5 rounded-lg transition-colors duration-150",
+    "relative group p-3 rounded-lg transition-colors duration-150",
     accent
       ? "hover:bg-[#25d366]/10"
       : active
@@ -202,6 +202,8 @@ const Dock = React.forwardRef<HTMLDivElement, VerticalDockProps>(
         transition={{ duration: 0.5, delay: 0.5, ease: [0.25, 0.4, 0.25, 1] }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        role="navigation"
+        aria-label="Site navigation"
         className={cn(
           "fixed right-2 sm:right-3 top-[38%] -translate-y-1/2 z-50",
           "flex flex-col items-center rounded-xl",

@@ -1,27 +1,108 @@
 {
-  "name": "Grave Care Kashmir",
+  "name": "Kashmir Grave Care",
   "short_name": "GraveCare",
-  "description": "Dignified grave care, cleaning, and restoration services in Kashmir for families worldwide.",
+  "description": "Dignified grave care, cleaning, and restoration services in Kashmir. Connecting the diaspora to the resting places of their loved ones.",
   "start_url": "/",
+  "id": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#0f1210",
-  "theme_color": "#1E5C45",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait-primary",
+  "background_color": "#1E5C45",
+  "theme_color": "#1E5C45",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["lifestyle", "utilities"],
   "icons": [
+    {
+      "src": "/icons/icon-48.png",
+      "sizes": "48x48",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
-  "categories": ["lifestyle", "utilities"],
-  "lang": "en",
-  "dir": "ltr"
+  "shortcuts": [
+    {
+      "name": "Our Services",
+      "short_name": "Services",
+      "url": "/services",
+      "description": "View grave care service packages",
+      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Book a Service",
+      "short_name": "Book",
+      "url": "/contact",
+      "description": "Schedule a consultation via WhatsApp",
+      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Our Work",
+      "short_name": "Portfolio",
+      "url": "/work",
+      "description": "View before and after gallery",
+      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
+    }
+  ],
+  "prefer_related_applications": false
 }

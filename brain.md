@@ -4,7 +4,7 @@
 > **Stack**: Next.js 14 + React 18 + TypeScript + Tailwind CSS 3 + Framer Motion + GSAP + Lenis + Three.js  
 > **Deployment**: Vercel (repo: github.com/tawfeeq-A/Kashmir-Grave-Care)  
 > **CMS**: Supabase (PostgreSQL) — RLS policies in `docs/supabase-rls.sql`  
-> **PWA**: installable (manifest.json + sw.js). **First Load JS: 262 KB** (Three.js code-split via dynamic import).
+> **PWA**: v1.0.0 — standalone, installable (manifest.json + sw.js v3 multi-cache). **First Load JS: 272 KB** (Three.js code-split via dynamic import).
 
 > ⚠️ **AGENT NOTE (read first, always):** This `brain.md` is the source of truth for what has been built and changed. Consult it BEFORE making any new changes, and UPDATE it after every set of changes. Skills installed for this project live in `.kiro/steering/` (UI/UX Pro Max) plus the global taste/design skills.
 
@@ -53,10 +53,13 @@ grave-care-kashmir/
 ├── styles/
 │   └── globals.css          # Design system: tokens, glass, shadows, animations, reduced-motion
 ├── public/
-│   ├── icons/               # icon-192.png, icon-512.png (PWA)
+│   ├── icons/               # icon-48 thru icon-512.png + maskable-192/512.png (PWA)
 │   ├── images/              # logo.jpg, kashmir-cemetery.png, grave-*.jpg, eco_*.webp
-│   ├── manifest.json        # PWA manifest
-│   └── sw.js                # Service worker (same-origin, network-first)
+│   ├── favicon.png          # 48x48 PNG favicon
+│   ├── manifest.json        # PWA manifest (standalone, 11 icons, shortcuts)
+│   └── sw.js                # Service worker v3 (multi-cache, offline fallback, update handling)
+├── scripts/
+│   └── generate-icons.js    # Sharp-based icon generator (run: npm run generate-icons)
 ├── vercel.json              # git.deploymentEnabled: false (manual deploy only)
 ├── next.config.js           # AVIF/WebP images, security headers
 ├── tailwind.config.ts       # CSS-variable colors, accordion animation
@@ -454,6 +457,73 @@ Root cause of the reported mobile "screen jump / next-screen enlarges" between t
 7. **Floating stat card overlap (`index.tsx`)** — root cause: the `.relative` wrapper was full column width while the image was `max-w-sm mx-auto` (centered/narrower), so the `-bottom-4 right-2` card anchored to the column edge, detached from the image on mobile. Moved `max-w-sm sm:max-w-md mx-auto lg:mx-0` up to the wrapper; image container is now plain `w-full`. Card now anchors to the image edge on all screens.
 
 Verified: `npx tsc --noEmit` clean; `npm run build` clean (7 static pages, homepage 272 KB First Load JS). Desktop layout/behavior unchanged.
+
+### 2026-07-09 — Production PWA Upgrade (v1.0.0)
+
+Comprehensive Progressive Web App upgrade to pass Lighthouse PWA installability checks and deliver a polished native-app experience on all platforms.
+
+#### Web App Manifest (`public/manifest.json`) — complete rewrite:
+- `name`: "Kashmir Grave Care", `short_name`: "GraveCare"
+- `display`: standalone (no browser chrome), `display_override`: ["standalone", "minimal-ui"]
+- `background_color` + `theme_color`: `#1E5C45` (brand green)
+- **11 icons**: 9 standard (48–512px, purpose: any) + 2 maskable (192, 512) with 10% safe-zone padding on brand-green background
+- **Shortcuts**: Services, Book a Service, Our Work (appear on long-press of app icon)
+- `id`, `scope`, `orientation`, `categories`, `lang`, `dir` fields added
+
+#### Icon Generation (`scripts/generate-icons.js`):
+- Node script using `sharp` (devDep) — generates all icon sizes + maskable variants + favicon.png from the 512×512 source
+- Run via `npm run generate-icons`
+
+#### Service Worker (`public/sw.js`) — rewritten from scratch:
+- **Versioned multi-cache**: `gck-v3-static`, `gck-v3-pages`, `gck-v3-images`, `gck-v3-fonts`
+- **Strategies**: cache-first (static assets, fonts), network-first with offline fallback (HTML pages), stale-while-revalidate (images)
+- **Precaching**: all 6 app-shell pages (/, /services, /about, /work, /contact, /offline) + manifest + favicon + logo + icons
+- **Offline fallback**: graceful `/offline` page with retry button (instead of browser error)
+- **Update handling**: `SKIP_WAITING` message listener for seamless version transitions
+- **Activation**: immediately claims all clients, purges old version caches
+
+#### Offline Page (`pages/offline.tsx`):
+- Clean, branded offline state with Wi-Fi icon, explanatory text, retry button
+- Uses existing design tokens (no extra CSS)
+
+#### `_document.tsx` — full PWA head:
+- Dual `theme-color` meta (light: `#1E5C45`, dark: `#0f1210`)
+- `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style` (black-translucent), `apple-mobile-web-app-title`
+- Multiple `apple-touch-icon` sizes (152, 192, 512)
+- `msapplication-TileColor` + `msapplication-TileImage` (icon-144)
+- `mobile-web-app-capable`, `format-detection`, `application-name`
+- Favicon: `/favicon.png` (48px)
+
+#### `_app.tsx` — smart SW registration:
+- Registers `/sw.js` with scope `/`
+- Checks for updates on `visibilitychange` (user returns to tab)
+- Detects `updatefound` → shows non-intrusive glass toast: "A new version is available" with "Update now" button
+- `controllerchange` listener reloads page after user accepts update
+- Toast is dismissible, uses `role="alert"` + `aria-live="polite"` for screen readers
+- Skip-to-content link (`#main-content`) for keyboard navigation
+
+#### Performance:
+- `next.config.js`: HSTS header, `compress: true`, `poweredByHeader: false`, aggressive cache headers (icons immutable 1yr, images 30d SWR, SW no-cache)
+- `vercel.json`: SW `Cache-Control: no-cache` + `Service-Worker-Allowed: /`, manifest `Content-Type: application/manifest+json`
+- Navbar + Footer logos: switched from `<img>` to `next/image` (optimized WebP/AVIF serving, prevents layout shift via explicit width/height)
+- Navbar scroll listener: `{ passive: true }` (eliminates scroll jank warning)
+- `globals.css`: `scrollbar-gutter: stable` (prevents layout shift from scrollbar appearance), `-webkit-tap-highlight-color: transparent` (iOS)
+- Package version bumped to `1.0.0`
+
+#### Accessibility:
+- Skip-to-content link at top of DOM (`<a href="#main-content" class="skip-link">`)
+- `role="banner"` on Navbar `<header>`
+- `role="contentinfo"` on Footer `<footer>`
+- `role="navigation"` + `aria-label="Site navigation"` on dock
+- Dock touch targets increased from `p-2.5` (36px) → `p-3` (40px + hit area)
+- Touch-target utility class in globals.css (48×48dp minimum via pseudo-element)
+- Smooth scroll only when `prefers-reduced-motion: no-preference`
+- All existing a11y preserved: focus-ring, reduced-motion block, semantic HTML
+
+#### Build output:
+- 8 static pages (new: `/offline`)
+- Homepage: 272 KB First Load JS (unchanged from before)
+- `_app` shared: 268 KB (4 KB increase from SW update toast + skip-link)
 
 ---
 

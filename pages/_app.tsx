@@ -1,6 +1,6 @@
 import type { AppProps } from "next/app";
 import Head from "next/head";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -22,14 +22,72 @@ const ParticleCanvas = dynamic(() => import("@/components/ParticleCanvas"), { ss
 
 export default function App({ Component, pageProps }: AppProps) {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [swUpdateAvailable, setSwUpdateAvailable] = useState(false);
   const router = useRouter();
   const prefersReduced = useReducedMotion();
 
-  // Register service worker for PWA install
+  // Register service worker with update detection
   useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+
+    let registration: ServiceWorkerRegistration | null = null;
+
+    const registerSW = async () => {
+      try {
+        registration = await navigator.serviceWorker.register("/sw.js", {
+          scope: "/",
+        });
+
+        // Check for updates on page visibility change (user comes back to tab)
+        const checkForUpdate = () => {
+          if (document.visibilityState === "visible" && registration) {
+            registration.update();
+          }
+        };
+        document.addEventListener("visibilitychange", checkForUpdate);
+
+        // Detect waiting worker (new version available)
+        if (registration.waiting) {
+          setSwUpdateAvailable(true);
+        }
+
+        registration.addEventListener("updatefound", () => {
+          const newWorker = registration?.installing;
+          if (!newWorker) return;
+
+          newWorker.addEventListener("statechange", () => {
+            if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+              // New version installed and waiting
+              setSwUpdateAvailable(true);
+            }
+          });
+        });
+
+        // Listen for controller change (new SW took over) → reload
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
+        });
+      } catch (err) {
+        console.warn("SW registration failed:", err);
+      }
+    };
+
+    registerSW();
+  }, []);
+
+  // Prompt user to update when new SW is waiting
+  const handleUpdate = useCallback(() => {
+    const reg = navigator.serviceWorker?.controller;
+    if (reg) {
+      navigator.serviceWorker.ready.then((registration) => {
+        registration.waiting?.postMessage({ type: "SKIP_WAITING" });
+      });
     }
+    setSwUpdateAvailable(false);
   }, []);
 
   return (
@@ -56,8 +114,11 @@ export default function App({ Component, pageProps }: AppProps) {
           </div>
 
           <div className="flex flex-col min-h-screen relative z-10">
+            <a href="#main-content" className="skip-link">
+              Skip to main content
+            </a>
             <Navbar />
-            <main className="flex-grow">
+            <main id="main-content" className="flex-grow">
               {/* Opacity-only page transition (no transform — keeps GSAP pin
                   and position:fixed working). Refreshes ScrollTrigger after. */}
               <AnimatePresence mode="wait" initial={false}>
@@ -80,6 +141,32 @@ export default function App({ Component, pageProps }: AppProps) {
           <SideDock />
 
           {isAdminOpen && <AdminPanel onClose={() => setIsAdminOpen(false)} />}
+
+          {/* ─── SW Update Toast ─── */}
+          {swUpdateAvailable && (
+            <div
+              role="alert"
+              aria-live="polite"
+              className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] glass-card shadow-premium rounded-xl px-5 py-3 flex items-center gap-3 animate-fadeInUp"
+            >
+              <p className="text-sm text-foreground font-medium">A new version is available</p>
+              <button
+                onClick={handleUpdate}
+                className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors whitespace-nowrap focus-ring rounded px-2 py-1"
+              >
+                Update now
+              </button>
+              <button
+                onClick={() => setSwUpdateAvailable(false)}
+                aria-label="Dismiss update notification"
+                className="text-muted-foreground hover:text-foreground transition-colors p-1 focus-ring rounded"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="M1 1l12 12M13 1L1 13" />
+                </svg>
+              </button>
+            </div>
+          )}
         </MaskReveal>
       </SmoothScroll>
     </SiteProvider>

@@ -402,3 +402,57 @@
     transition: none;
   }
 }
+
+/* ═══════════════════════════════════════════════════════
+   TOUCH & MOBILE — Accessibility & Performance
+   ═══════════════════════════════════════════════════════ */
+
+/* Ensure comfortable touch targets (48x48dp minimum) */
+@layer utilities {
+  .touch-target {
+    position: relative;
+  }
+  .touch-target::after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    min-width: 48px;
+    min-height: 48px;
+  }
+}
+
+/* Smooth scrolling only for users who haven't opted out */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Prevent content shift from scrollbar appearance */
+html {
+  scrollbar-gutter: stable;
+}
+
+/* iOS tap highlight removal */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Skip to content link (keyboard a11y) */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  z-index: 9999;
+  padding: 1rem 1.5rem;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 0 0 0.5rem 0;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+}

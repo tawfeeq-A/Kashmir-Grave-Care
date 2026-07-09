@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Mail, Phone, MapPin, ShieldCheck, Check, Sun, Moon } from "lucide-react";
 import { useSite } from "@/context/SiteContext";
 import { supabase } from "@/lib/supabase";
@@ -75,7 +76,7 @@ export default function Footer({ onOpenAdmin }: { onOpenAdmin?: () => void }) {
   };
 
   return (
-    <footer className="bg-secondary/40 border-t border-border/60 relative overflow-hidden">
+    <footer className="bg-secondary/40 border-t border-border/60 relative overflow-hidden" role="contentinfo">
       {/* Monumental scrolling text — MyWebLab inspired */}
       <div className="absolute top-1/2 -translate-y-1/2 left-0 w-full overflow-hidden pointer-events-none select-none" aria-hidden="true">
         <div className="animate-scrollText whitespace-nowrap">
@@ -91,10 +92,12 @@ export default function Footer({ onOpenAdmin }: { onOpenAdmin?: () => void }) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           {/* Brand Info */}
           <div className="space-y-4">
-            <Link href="/" className="flex items-center space-x-2.5 group">
-              <img
+            <Link href="/" className="flex items-center space-x-2.5 group" aria-label="Kashmir Grave Care — Home">
+              <Image
                 src="/images/logo.jpg"
-                alt="Grave Care Kashmir Logo"
+                alt=""
+                width={32}
+                height={32}
                 className="h-8 w-8 rounded-full object-cover border border-amber-500/20 group-hover:scale-110 transition-transform duration-300"
               />
               <span className="font-serif text-xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
