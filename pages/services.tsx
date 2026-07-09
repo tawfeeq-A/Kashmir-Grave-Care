@@ -136,10 +136,10 @@ export default function Services() {
                       href={`https://wa.me/${(settings?.whatsapp_number || "917006830501").replace(/[^0-9]/g, '')}?text=${encodeURIComponent(settings?.whatsapp_message || "")}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`flex w-full items-center justify-center px-4 py-3 text-sm font-semibold rounded-xl transition-all hover:-translate-y-0.5 ${
+                      className={`btn-base w-full px-4 py-3 text-sm ${
                         pkg.popular
-                          ? "bg-primary text-primary-foreground hover:bg-primary/95 hover:shadow-md"
-                          : "bg-secondary hover:bg-secondary/80 text-foreground hover:shadow-sm"
+                          ? "btn-primary"
+                          : "bg-secondary hover:bg-secondary/80 text-foreground border border-border/60 hover:-translate-y-0.5 hover:shadow-sm"
                       }`}
                     >
                       {pkg.ctaText}

@@ -527,6 +527,55 @@ Comprehensive Progressive Web App upgrade to pass Lighthouse PWA installability 
 
 ---
 
+### 2026-07-09 — Premium Product Polish Pass (design, motion, a11y, new features)
+
+Full refinement pass (not a redesign) to lift the product to premium, world-class quality. Grounded in Emil Kowalski's motion principles + impeccable design guidance.
+
+#### Motion + token foundation (`globals.css`):
+- Custom easing curves: `--ease-out-quart`, `--ease-out-expo`, `--ease-in-out-quart`, `--ease-drawer`
+- Duration scale: `--dur-press` (140ms), `--dur-fast` (180ms), `--dur-base` (240ms), `--dur-slow` (400ms)
+- Radius scale: `--radius-sm/md/lg/xl`
+- Removed `transition: all` in favor of specific transform/shadow/color transitions
+- Gated all hover transforms behind `@media (hover: hover) and (pointer: fine)` (no false hover on touch)
+
+#### Button system (`globals.css` + all pages):
+- `.btn-base` (transform+shadow+color only, focus-visible ring, `scale(0.97)` press), `.btn-primary` (strong shadow + hover lift, greatest emphasis), `.btn-secondary` (tinted, lighter), `.press` (generic press feedback)
+- Applied across homepage, contact, services, work, offline — clear primary/secondary hierarchy, consistent ~140–240ms interaction timing
+
+#### Journey of Care (`SVGPathTimeline.tsx`) — responsive layout rebuild:
+- Desktop: horizontal connected steps ①──②──③──④ with a center-aligned fill rail
+- Mobile: clean vertical flow with a connecting rail
+- Rails fill on scroll via `scaleX`/`scaleY` (scrubbed, GPU-friendly), steps stagger fade+rise; reduced-motion shows all static
+
+#### New components:
+- **`OrderProgressTracker.tsx`** — premium status tracker (Booking → Assigned → Cleaning → Completed → Photos Delivered). Responsive horizontal (sm+) / vertical (mobile), states complete/current(pulse)/upcoming, animated rail fill. Integrated into the contact submitted state (`currentStep={0}`).
+- **`ui/Skeleton.tsx`** — `Skeleton`, `GalleryGridSkeleton`, `TextSkeleton` with shimmer (reduced-motion aware). Work page shows gallery skeletons while loading.
+- **`EmptyState.tsx`** — branded empty state (layered-ring medallion, title, description, optional action). Replaces the work page's plain empty block; includes a Follow-on-Instagram action.
+
+#### Dock (`ui/dock-two.tsx`) — motion overhaul:
+- Now attached **flush to the right edge** (`right-0`, `rounded-l-2xl`, `border-r-0`, directional shadow) — reads as part of the UI, not floating
+- Expand/collapse switched from layout `height:auto` to GPU-friendly `scale+opacity` **spring** (Apple-style: stiffness 420, damping 34)
+- Sliding active indicator via shared `layoutId`
+- **Hide-on-scroll-down / show-on-scroll-up** (past 240px, only when collapsed & not hovered; rAF + passive listener)
+- Tap `scale(0.9)`, hover `scale(1.12)`, icons 18px; all springs gated by `useReducedMotion`
+
+#### Hero + intro (`shape-landing-hero.tsx`, `index.tsx`):
+- Hero gained an `actions` slot — WhatsApp (primary) + View Services (secondary) CTAs on the first screen for CTA prominence, placed between description and trust badges
+- Intro image depth: larger blur glow (`-inset-6 blur-3xl`), an offset layered frame card, `shadow-premium` + ring
+- Intro headline: `text-balance`, `tracking-tight`, tighter leading for hierarchy
+- Note: kept the hero's green→amber gradient headline (deliberate brand identity) despite the general gradient-text guideline, per the do-not-redesign constraint
+
+#### Cards + depth:
+- Stat cards (`AnimatedCounters.tsx`) elevated: `premium-card`, `bg-background/70` + subtle blur, `shadow-sm`, more padding
+
+#### Performance / a11y:
+- Work-page gallery `<img>` → `loading="lazy" decoding="async"`
+- Existing a11y retained/strengthened: `focus-ring` on all buttons, landmark roles, skip-to-content link, comprehensive reduced-motion
+
+Verified: `npx tsc --noEmit` clean; `npm run build` clean (8 static pages; homepage 272 KB First Load JS, steady).
+
+---
+
 ## 🚀 Deployment Checklist (before go-live)
 
 1. **Run `docs/supabase-rls.sql`** in Supabase SQL Editor. Verify anon cannot read `contact_submissions` / `newsletter_subscriptions`.

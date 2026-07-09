@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -71,9 +72,11 @@ function ElegantShape({
 function HeroGeometric({
     title1 = "Elevate Your Vision",
     title2 = "Crafting Digital Excellence",
+    actions,
 }: {
     title1?: string;
     title2?: string;
+    actions?: ReactNode;
 }) {
     const fadeUpVariants = {
         hidden: { opacity: 0, y: 30 },
@@ -186,10 +189,23 @@ function HeroGeometric({
                         initial="hidden"
                         animate="visible"
                     >
-                        <p className="text-sm sm:text-base md:text-xl text-muted-foreground mb-6 leading-relaxed font-normal tracking-wide max-w-xl mx-auto px-4">
+                        <p className="text-sm sm:text-base md:text-xl text-muted-foreground mb-8 leading-relaxed font-normal tracking-wide max-w-xl mx-auto px-4">
                             Dignified grave care, cleaning, restoration, and floral tributes in Kashmir. Keeping ancestral memories serene and close.
                         </p>
                     </motion.div>
+
+                    {/* Primary actions */}
+                    {actions && (
+                        <motion.div
+                            custom={2.1}
+                            variants={fadeUpVariants}
+                            initial="hidden"
+                            animate="visible"
+                            className="flex flex-col sm:flex-row justify-center items-center gap-3 mb-9 px-4"
+                        >
+                            {actions}
+                        </motion.div>
+                    )}
 
                     {/* Trust Badges */}
                     <motion.div
@@ -197,7 +213,7 @@ function HeroGeometric({
                         variants={fadeUpVariants}
                         initial="hidden"
                         animate="visible"
-                        className="flex flex-wrap justify-center items-center gap-2 sm:gap-3 text-[10px] sm:text-xs font-semibold text-muted-foreground/80 mb-8 max-w-2xl mx-auto px-4"
+                        className="flex flex-wrap justify-center items-center gap-2 sm:gap-3 text-[10px] sm:text-xs font-semibold text-muted-foreground/80 max-w-2xl mx-auto px-4"
                     >
                         <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-secondary/50 border border-border/40 gap-1.5 shadow-sm">
                             <span className="w-1.5 h-1.5 rounded-full bg-primary" />

@@ -89,7 +89,7 @@ export default function WorkGallery() {
         <div className="text-center mt-12">
           <Link
             href="/work"
-            className="inline-flex items-center px-6 py-3 text-sm font-semibold text-primary bg-primary/10 hover:bg-primary/20 rounded-xl transition-all border border-primary/20 hover:-translate-y-0.5 hover:shadow-md"
+            className="btn-base btn-secondary px-6 py-3 text-sm hover:shadow-md"
           >
             View All Our Work
             <ArrowRight className="h-4 w-4 ml-2" />

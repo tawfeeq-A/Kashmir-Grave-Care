@@ -5,6 +5,7 @@ import { ChevronRight, ChevronLeft, Check, Sparkles, Calendar, User, MapPin, Cli
 import { useSite } from "@/context/SiteContext";
 import { supabase } from "@/lib/supabase";
 import ScrollReveal from "@/components/ScrollReveal";
+import OrderProgressTracker from "@/components/OrderProgressTracker";
 
 export default function Contact() {
   const router = useRouter();
@@ -250,6 +251,11 @@ export default function Contact() {
                     </div>
                   </div>
 
+                  {/* Order progress tracker */}
+                  <div className="pt-6 max-w-lg mx-auto text-left">
+                    <OrderProgressTracker currentStep={0} />
+                  </div>
+
                   <div className="pt-6">
                     <button
                       onClick={() => {
@@ -271,7 +277,7 @@ export default function Contact() {
                           notes: "",
                         });
                       }}
-                      className="inline-flex items-center px-6 py-2.5 text-sm font-semibold text-primary-foreground bg-primary hover:bg-primary/95 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
+                      className="btn-base btn-primary px-6 py-2.5 text-sm"
                     >
                       Submit Another Request
                     </button>
@@ -611,7 +617,7 @@ export default function Contact() {
                       <button
                         type="button"
                         onClick={prevStep}
-                        className="inline-flex items-center px-4 py-2.5 text-sm font-semibold text-foreground bg-secondary hover:bg-secondary/80 rounded-xl transition-all hover:-translate-y-0.5"
+                        className="btn-base px-4 py-2.5 text-sm text-foreground bg-secondary hover:bg-secondary/80 border border-border/60"
                       >
                         <ChevronLeft className="h-4 w-4 mr-1.5" /> Back
                       </button>
@@ -623,7 +629,7 @@ export default function Contact() {
                       <button
                         type="button"
                         onClick={nextStep}
-                        className="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-primary-foreground bg-primary hover:bg-primary/95 rounded-xl transition-all shadow-xs ml-auto hover:-translate-y-0.5 hover:shadow-md"
+                        className="btn-base btn-primary px-5 py-2.5 text-sm ml-auto"
                       >
                         Continue <ChevronRight className="h-4 w-4 ml-1.5" />
                       </button>
@@ -631,7 +637,7 @@ export default function Contact() {
                       <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="inline-flex items-center px-6 py-2.5 text-sm font-bold text-primary-foreground bg-primary hover:bg-primary/95 rounded-xl transition-all shadow-md ml-auto disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 hover:shadow-lg"
+                        className="btn-base btn-primary px-6 py-2.5 text-sm ml-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none"
                       >
                         {isSubmitting ? (
                           <>

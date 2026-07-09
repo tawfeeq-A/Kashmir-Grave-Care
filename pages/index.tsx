@@ -106,7 +106,28 @@ export default function Home() {
           HERO
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section className="relative overflow-hidden">
-        <HeroGeometric title1={title1} title2={title2} />
+        <HeroGeometric
+          title1={title1}
+          title2={title2}
+          actions={
+            <>
+              <a
+                href={`https://wa.me/${(settings?.whatsapp_number || "917006830501").replace(/[^0-9]/g, '')}?text=${encodeURIComponent(settings?.whatsapp_message || "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-base btn-primary btn-sheen w-full sm:w-auto px-7 py-3.5 text-sm"
+              >
+                <MessageSquare className="h-4 w-4 mr-2" /> {content.heroWhatsappButton || "Chat on WhatsApp"}
+              </a>
+              <Link
+                href="/services"
+                className="btn-base btn-secondary w-full sm:w-auto px-7 py-3.5 text-sm"
+              >
+                {content.ctaServicesButton || "View Services"}
+              </Link>
+            </>
+          }
+        />
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -118,9 +139,11 @@ export default function Home() {
             {/* Left — Image with layered depth */}
             <ScrollReveal direction="up" delay={0.1}>
               <div className="relative w-full max-w-sm sm:max-w-md mx-auto lg:mx-0">
-                {/* Decorative accent behind image */}
-                <div className="absolute -inset-4 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 rounded-[2.5rem] blur-2xl" />
-                <div className="relative aspect-[4/3] sm:aspect-[4/5] w-full overflow-hidden rounded-2xl sm:rounded-[2rem] border border-border/60 shadow-2xl shadow-primary/5">
+                {/* Decorative accent glow behind image */}
+                <div className="absolute -inset-6 bg-gradient-to-br from-primary/12 via-transparent to-accent/12 rounded-[2.75rem] blur-3xl" />
+                {/* Layered depth frame — offset card reads as tactile depth */}
+                <div className="absolute -bottom-3 -left-3 hidden sm:block w-full h-full rounded-[2rem] bg-secondary/50 border border-border/40 -z-10" aria-hidden="true" />
+                <div className="relative aspect-[4/3] sm:aspect-[4/5] w-full overflow-hidden rounded-2xl sm:rounded-[2rem] border border-border/60 shadow-premium ring-1 ring-black/5">
                   <Image
                     src="/images/kashmir-cemetery.png"
                     alt="Kashmir cemetery with white marble graves under Chinar trees"
@@ -150,10 +173,10 @@ export default function Home() {
             {/* Right — Text content */}
             <ScrollReveal direction="up" delay={0.2}>
               <div className="space-y-6 sm:space-y-8 text-center lg:text-left">
-                <h2 className="text-2xl sm:text-3xl lg:text-[2.75rem] font-bold font-serif text-foreground leading-[1.15]">
+                <h2 className="text-[1.75rem] sm:text-3xl lg:text-[2.75rem] font-bold font-serif text-foreground leading-[1.12] tracking-tight text-balance">
                   {content.eyebrow || "Distance should never mean neglect."}
                 </h2>
-                <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-lg mx-auto lg:mx-0">
+                <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-lg mx-auto lg:mx-0 text-pretty">
                   {settings?.hero_subtitle || "For families across the world who carry the quiet ache of being far from their loved ones' resting places, we are your trusted hands in Kashmir."}
                 </p>
                 <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-3 sm:gap-4 pt-2">
@@ -161,13 +184,13 @@ export default function Home() {
                     href={`https://wa.me/${(settings?.whatsapp_number || "917006830501").replace(/[^0-9]/g, '')}?text=${encodeURIComponent(settings?.whatsapp_message || "")}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="btn-sheen inline-flex items-center justify-center px-7 py-3.5 text-sm font-semibold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl transition-all shadow-md hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.97]"
+                    className="btn-base btn-primary btn-sheen px-7 py-3.5 text-sm"
                   >
                     <MessageSquare className="h-4 w-4 mr-2" /> {content.heroWhatsappButton || "Chat on WhatsApp"}
                   </a>
                   <Link
                     href="/work"
-                    className="inline-flex items-center justify-center px-7 py-3.5 text-sm font-semibold text-primary bg-primary/8 hover:bg-primary/12 rounded-xl transition-all border border-primary/20 hover:-translate-y-0.5 active:scale-[0.97]"
+                    className="btn-base btn-secondary px-7 py-3.5 text-sm"
                   >
                     <Camera className="h-4 w-4 mr-2" /> {content.heroWorkButton || "See our work"}
                   </Link>
@@ -349,14 +372,14 @@ export default function Home() {
                 href={`https://wa.me/${(settings?.whatsapp_number || "917006830501").replace(/[^0-9]/g, '')}?text=${encodeURIComponent(settings?.whatsapp_message || "")}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-sheen w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-primary bg-white hover:bg-zinc-50 rounded-xl transition-all hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.97]"
+                className="btn-base btn-sheen w-full sm:w-auto px-8 py-4 text-base text-primary bg-white shadow-lg shadow-black/10 hover:bg-zinc-50 hover:-translate-y-0.5 hover:shadow-xl"
               >
                 <Phone className="h-4 w-4 mr-2" />
                 {content.cta_button_text || "Start WhatsApp Chat"}
               </a>
               <Link
                 href="/services"
-                className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-primary-foreground/90 bg-white/10 hover:bg-white/15 rounded-xl transition-all border border-white/15 active:scale-[0.97]"
+                className="btn-base w-full sm:w-auto px-8 py-4 text-base text-primary-foreground/90 bg-white/10 hover:bg-white/15 hover:-translate-y-0.5 border border-white/15"
               >
                 {content.ctaServicesButton || "View Services & Packages"}
               </Link>

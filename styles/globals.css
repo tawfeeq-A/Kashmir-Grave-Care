@@ -24,6 +24,22 @@
     --border: 220 10% 90%;
     --input: 220 10% 93%;
     --ring: 160 45% 22%;
+
+    /* ── Motion system — strong custom curves (premium feel) ── */
+    --ease-out-quart: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+    --dur-press: 140ms;
+    --dur-fast: 180ms;
+    --dur-base: 240ms;
+    --dur-slow: 400ms;
+
+    /* ── Radius scale ── */
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.25rem;
   }
 
   .dark {
@@ -135,6 +151,11 @@
   to { transform: rotate(360deg); }
 }
 
+/* Skeleton shimmer sweep */
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
 /* ═══════════════════════════════════════════════════════
    UTILITY CLASSES
    ═══════════════════════════════════════════════════════ */
@@ -166,6 +187,30 @@
 
 .animate-spinSlow {
   animation: spinSlow 20s linear infinite;
+}
+
+/* ─── Skeleton loading placeholder ─── */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: hsl(var(--muted));
+  border-radius: var(--radius-md);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--foreground) / 0.06),
+    transparent
+  );
+  animation: shimmer 1.5s var(--ease-out-quart) infinite;
+}
+.dark .skeleton::after {
+  background: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.05), transparent);
 }
 
 /* ─── Premium glassmorphism card ─── */
@@ -256,12 +301,14 @@
     transparent 80%
   );
   transform: translateX(-120%);
-  transition: transform 0.7s cubic-bezier(0.25, 0.4, 0.25, 1);
+  transition: transform 0.7s var(--ease-out-quart);
   pointer-events: none;
 }
 
-.btn-sheen:hover::after {
-  transform: translateX(120%);
+@media (hover: hover) and (pointer: fine) {
+  .btn-sheen:hover::after {
+    transform: translateX(120%);
+  }
 }
 
 /* ─── Subtle grain overlay (kills banding on dark surfaces) ─── */
@@ -305,19 +352,98 @@
 
 /* ─── Premium card hover ─── */
 .premium-card {
-  transition: transform 0.45s cubic-bezier(0.25, 0.4, 0.25, 1), box-shadow 0.45s cubic-bezier(0.25, 0.4, 0.25, 1);
+  transition: transform var(--dur-slow) var(--ease-out-quart), box-shadow var(--dur-slow) var(--ease-out-quart);
+  will-change: transform;
 }
 
-.premium-card:hover {
-  transform: translateY(-5px);
-  box-shadow:
-    0 8px 20px -10px hsl(var(--foreground) / 0.1),
-    0 26px 60px -14px hsl(var(--primary) / 0.2);
+@media (hover: hover) and (pointer: fine) {
+  .premium-card:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 8px 20px -10px hsl(var(--foreground) / 0.1),
+      0 26px 60px -14px hsl(var(--primary) / 0.2);
+  }
 }
 
 /* ─── Focus-visible ring (keyboard a11y) ─── */
 .focus-ring {
   @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+}
+
+/* ═══════════════════════════════════════════════════════
+   BUTTON SYSTEM — premium primary / secondary / press
+   ═══════════════════════════════════════════════════════ */
+
+/* Shared: instant press feedback + keyboard focus ring.
+   Only transform + box-shadow transition (GPU-friendly). */
+.btn-base {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition:
+    transform var(--dur-press) var(--ease-out-quart),
+    box-shadow var(--dur-base) var(--ease-out-quart),
+    background-color var(--dur-fast) var(--ease-out-quart),
+    color var(--dur-fast) var(--ease-out-quart),
+    border-color var(--dur-fast) var(--ease-out-quart);
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-base:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring) / 0.65);
+}
+.btn-base:active {
+  transform: scale(0.97);
+}
+
+/* Primary — carries the strongest emphasis */
+.btn-primary {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  box-shadow:
+    0 1px 2px hsl(var(--primary) / 0.2),
+    0 8px 20px -8px hsl(var(--primary) / 0.45);
+}
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:hover {
+    background: hsl(var(--primary) / 0.94);
+    transform: translateY(-1px);
+    box-shadow:
+      0 2px 4px hsl(var(--primary) / 0.22),
+      0 14px 30px -10px hsl(var(--primary) / 0.55);
+  }
+  .btn-primary:hover:active {
+    transform: translateY(-1px) scale(0.97);
+  }
+}
+
+/* Secondary — visually lighter, tinted surface */
+.btn-secondary {
+  background: hsl(var(--primary) / 0.08);
+  color: hsl(var(--primary));
+  border: 1px solid hsl(var(--primary) / 0.18);
+}
+@media (hover: hover) and (pointer: fine) {
+  .btn-secondary:hover {
+    background: hsl(var(--primary) / 0.13);
+    transform: translateY(-1px);
+    border-color: hsl(var(--primary) / 0.3);
+  }
+  .btn-secondary:hover:active {
+    transform: translateY(-1px) scale(0.97);
+  }
+}
+
+/* Generic press-feedback for any interactive element (links, icons) */
+.press {
+  transition: transform var(--dur-press) var(--ease-out-quart);
+  -webkit-tap-highlight-color: transparent;
+}
+.press:active {
+  transform: scale(0.96);
 }
 
 /* ─── Gradient text ─── */
@@ -384,8 +510,21 @@
     animation: none;
   }
 
-  .premium-card:hover {
+  .skeleton::after {
+    animation: none;
+  }
+
+  .premium-card:hover,
+  .btn-primary:hover,
+  .btn-secondary:hover,
+  .btn-primary:hover:active,
+  .btn-secondary:hover:active {
     transform: none;
+  }
+
+  .btn-base:active,
+  .press:active {
+    transform: scale(0.99);
   }
 
   .btn-sheen::after {

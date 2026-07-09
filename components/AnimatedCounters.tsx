@@ -128,7 +128,7 @@ export default function AnimatedCounters({
             return (
               <div
                 key={idx}
-                className="flex flex-col items-center text-center space-y-3 sm:space-y-4 p-4 sm:p-6 rounded-2xl bg-secondary/20 border border-border/40 hover:border-primary/20 transition-colors"
+                className="premium-card flex flex-col items-center text-center space-y-3 sm:space-y-4 p-5 sm:p-7 rounded-2xl bg-background/70 md:backdrop-blur-sm border border-border/60 shadow-sm hover:border-primary/25"
               >
                 {/* Circular gauge */}
                 <div className="relative w-20 h-20 sm:w-28 sm:h-28">

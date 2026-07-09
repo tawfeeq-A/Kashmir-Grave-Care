@@ -1,12 +1,15 @@
 import React from "react";
 import Head from "next/head";
 import { useSite } from "@/context/SiteContext";
-import { ExternalLink, Instagram, Facebook, Sparkles } from "lucide-react";
+import { ExternalLink, Instagram, Facebook, Sparkles, Camera } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
+import { GalleryGridSkeleton } from "@/components/ui/Skeleton";
+import EmptyState from "@/components/EmptyState";
 
 export default function Work() {
-  const { settings, workMedia } = useSite();
+  const { settings, workMedia, loading } = useSite();
   const content = settings?.content_json || {};
+  const hasMedia = workMedia && workMedia.length > 0;
 
   return (
     <>
@@ -38,7 +41,7 @@ export default function Work() {
                     href={settings.instagram_profile_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center px-6 py-3 text-sm font-semibold text-primary bg-primary/10 hover:bg-primary/20 rounded-xl transition-all border border-primary/20 hover:-translate-y-0.5 hover:shadow-md"
+                    className="btn-base btn-secondary px-6 py-3 text-sm hover:shadow-md"
                   >
                     <Instagram className="h-4.5 w-4.5 mr-2" /> Follow on Instagram
                   </a>
@@ -48,7 +51,7 @@ export default function Work() {
                     href={settings.facebook_profile_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center px-6 py-3 text-sm font-semibold text-blue-600 bg-blue-500/10 hover:bg-blue-500/20 rounded-xl transition-all border border-blue-500/20 hover:-translate-y-0.5 hover:shadow-md"
+                    className="btn-base press px-6 py-3 text-sm font-semibold text-blue-600 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 hover:-translate-y-0.5 hover:shadow-md"
                   >
                     <Facebook className="h-4.5 w-4.5 mr-2" /> Follow on Facebook
                   </a>
@@ -57,7 +60,9 @@ export default function Work() {
             </div>
           </ScrollReveal>
 
-          {workMedia && workMedia.length > 0 ? (
+          {loading && !hasMedia ? (
+            <GalleryGridSkeleton count={6} />
+          ) : hasMedia ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {workMedia.map((media, idx) => (
                 <ScrollReveal key={media.id || idx} direction="up" delay={idx * 0.08}>
@@ -71,6 +76,8 @@ export default function Work() {
                       <img 
                         src={media.storage_path} 
                         alt={media.caption || "Our work"} 
+                        loading="lazy"
+                        decoding="async"
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                       />
                     ) : (
@@ -95,13 +102,23 @@ export default function Work() {
             </div>
           ) : (
             <ScrollReveal direction="up" delay={0.2}>
-              <div className="text-center py-20 bg-secondary/20 rounded-3xl border border-border/40 border-dashed">
-                <Instagram className="h-10 w-10 text-muted-foreground mx-auto mb-4 opacity-50" />
-                <h3 className="text-xl font-bold text-foreground">No recent posts</h3>
-                <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-                  We are currently updating our portfolio. Please follow our social media pages directly to see our latest work.
-                </p>
-              </div>
+              <EmptyState
+                icon={Camera}
+                title="Our portfolio is being updated"
+                description="We're preparing fresh before-and-after photos of our latest work across Kashmir. In the meantime, our newest projects are shared on our social pages."
+                action={
+                  settings?.instagram_profile_url ? (
+                    <a
+                      href={settings.instagram_profile_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-base btn-secondary px-6 py-3 text-sm"
+                    >
+                      <Instagram className="h-4 w-4 mr-2" /> Follow on Instagram
+                    </a>
+                  ) : undefined
+                }
+              />
             </ScrollReveal>
           )}
         </div>

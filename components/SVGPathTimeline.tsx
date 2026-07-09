@@ -18,6 +18,13 @@ interface SVGPathTimelineProps {
   tagIcon?: React.ReactNode;
 }
 
+/**
+ * Journey of Care — responsive timeline.
+ *  • Desktop (lg+): horizontal connected steps  ①──②──③──④
+ *  • Mobile: vertical flow with a connecting rail
+ * A single progress rail per layout fills on scroll (scrubbed, transform-based),
+ * and each step fades/rises in with a short stagger.
+ */
 export default function SVGPathTimeline({
   nodes,
   sectionTitle,
@@ -26,157 +33,172 @@ export default function SVGPathTimeline({
   tagIcon,
 }: SVGPathTimelineProps) {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const nodesRef = useRef<(HTMLDivElement | null)[]>([]);
+  const hFillRef = useRef<HTMLDivElement>(null);
+  const vFillRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    if (!sectionRef.current) return;
     const section = sectionRef.current;
+    if (!section) return;
+
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const ctx = gsap.context(() => {
-      const paths = section.querySelectorAll(".timeline-path");
+      if (prefersReduced) {
+        gsap.set(".joc-step", { opacity: 1, y: 0 });
+        gsap.set([hFillRef.current, vFillRef.current], { scaleX: 1, scaleY: 1 });
+        return;
+      }
 
-      paths.forEach((path) => {
-        try {
-          const svgPath = path as SVGPathElement;
-          const pathLength = svgPath.getTotalLength();
-          
-          // Set initial state — path invisible
-          gsap.set(svgPath, {
-            strokeDasharray: pathLength,
-            strokeDashoffset: pathLength,
-          });
+      // Steps: fade + rise, staggered, tied to the section entering view.
+      gsap.set(".joc-step", { opacity: 0, y: 24 });
+      gsap.to(".joc-step", {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        ease: "power3.out",
+        stagger: 0.12,
+        scrollTrigger: {
+          trigger: section,
+          start: "top 72%",
+          toggleActions: "play none none reverse",
+        },
+      });
 
-          // Animate path drawing on scroll
-          gsap.to(svgPath, {
-            strokeDashoffset: 0,
+      // Progress rails fill as the section scrolls through the viewport.
+      if (hFillRef.current) {
+        gsap.fromTo(
+          hFillRef.current,
+          { scaleX: 0 },
+          {
+            scaleX: 1,
             ease: "none",
             scrollTrigger: {
-              trigger: svgPath,
-              start: "top 75%",
-              end: "bottom 55%",
-              scrub: true,
+              trigger: section,
+              start: "top 60%",
+              end: "bottom 70%",
+              scrub: 0.6,
             },
-          });
-        } catch (e) {
-          console.warn("Failed to get SVG path length:", e);
-        }
-      });
-
-      // Animate each node's appearance
-      nodesRef.current.forEach((node) => {
-        if (!node) return;
-        gsap.set(node, { opacity: 0, y: 30 });
-        gsap.to(node, {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: node,
-            start: "top 85%",
-            toggleActions: "play none none reverse",
-          },
-        });
-      });
+          }
+        );
+      }
+      if (vFillRef.current) {
+        gsap.fromTo(
+          vFillRef.current,
+          { scaleY: 0 },
+          {
+            scaleY: 1,
+            ease: "none",
+            scrollTrigger: {
+              trigger: section,
+              start: "top 65%",
+              end: "bottom 75%",
+              scrub: 0.6,
+            },
+          }
+        );
+      }
     }, sectionRef);
 
-    return () => {
-      ctx.revert();
-    };
+    return () => ctx.revert();
   }, [nodes.length]);
+
   return (
     <section
       ref={sectionRef}
-      className="py-14 sm:py-20 bg-background/95 md:bg-background/80 md:backdrop-blur-md border-b border-border/40 overflow-hidden"
+      className="py-16 sm:py-24 bg-background/95 md:bg-background/80 md:backdrop-blur-md border-b border-border/40 overflow-hidden"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-20">
+        <div className="text-center max-w-2xl mx-auto mb-14 sm:mb-20">
           {sectionTag && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary mb-3">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary mb-4">
               {tagIcon} {sectionTag}
             </span>
           )}
           {sectionTitle && (
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold sm:text-4xl text-foreground">
+            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-foreground tracking-tight text-balance">
               {sectionTitle}
             </h2>
           )}
           {sectionSubtitle && (
-            <p className="mt-3 sm:mt-4 text-muted-foreground max-w-2xl text-base sm:text-lg">
+            <p className="mt-4 text-muted-foreground text-base sm:text-lg leading-relaxed text-pretty">
               {sectionSubtitle}
             </p>
           )}
         </div>
 
-        {/* Timeline container */}
-        <div className="relative max-w-3xl mx-auto">
-          {/* Timeline nodes */}
-          <div className="space-y-0 relative z-10">
-            {nodes.map((node, idx) => {
-              const isLeft = idx % 2 === 0;
-              return (
-                <div
-                  key={idx}
-                  ref={(el) => { nodesRef.current[idx] = el; }}
-                  className={`flex flex-row items-stretch gap-6 lg:gap-12 text-left ${
-                    isLeft ? "lg:flex-row" : "lg:flex-row-reverse"
-                  }`}
-                >
-                  {/* Node dot and connector column */}
-                  <div className="relative flex-shrink-0 z-10 order-1 lg:order-2 flex flex-col items-center">
-                    <div className="w-10 h-10 lg:w-14 lg:h-14 rounded-full bg-primary text-primary-foreground font-bold text-base lg:text-xl flex items-center justify-center shadow-lg shadow-primary/20 ring-4 ring-primary/10 transition-transform duration-300 hover:scale-110 shrink-0">
-                      {node.num}
-                    </div>
-                    {/* Active Sequential Path (Only show if not last step) */}
-                    {idx < nodes.length - 1 && (
-                      <div className="w-1 lg:w-2 grow flex justify-center py-2 min-h-[60px]">
-                        <svg
-                          className="w-full h-full text-primary/15"
-                          viewBox="0 0 4 100"
-                          preserveAspectRatio="none"
-                          fill="none"
-                        >
-                          <line
-                            x1="2"
-                            y1="0"
-                            x2="2"
-                            y2="100"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          />
-                          <path
-                            className="timeline-path"
-                            d="M2 0 L2 100"
-                            stroke="hsl(var(--primary))"
-                            strokeWidth="3.5"
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
+        {/* ── Desktop: horizontal connected steps ── */}
+        <div className="hidden lg:block">
+          <div className="relative">
+            {/* Rail track + animated fill, aligned to circle centers (half a column inset) */}
+            <div
+              className="absolute top-8 left-[12.5%] right-[12.5%] h-[3px] rounded-full bg-primary/12"
+              aria-hidden="true"
+            />
+            <div
+              ref={hFillRef}
+              className="absolute top-8 left-[12.5%] right-[12.5%] h-[3px] rounded-full bg-primary/70 origin-left"
+              style={{ transform: "scaleX(0)", willChange: "transform" }}
+              aria-hidden="true"
+            />
 
-                  {/* Content */}
-                  <div
-                    className={`flex-1 space-y-2 lg:space-y-3 pb-12 order-2 ${
-                      isLeft ? "lg:order-1 lg:text-right" : "lg:order-3 lg:text-left"
-                    }`}
-                  >
-                    <h3 className="text-lg lg:text-xl font-bold text-foreground font-serif">
+            <ol className="relative grid grid-cols-4 gap-6 xl:gap-10">
+              {nodes.map((node, idx) => (
+                <li key={idx} className="joc-step flex flex-col items-center text-center">
+                  <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground font-serif text-2xl font-bold shadow-lg shadow-primary/25 ring-[6px] ring-background">
+                    {node.num}
+                  </div>
+                  <div className="mt-7 space-y-2">
+                    <h3 className="text-lg font-bold font-serif text-foreground">
                       {node.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed max-w-md lg:mx-0">
+                    <p className="text-sm text-muted-foreground leading-relaxed max-w-[15rem] mx-auto text-pretty">
                       {node.desc}
                     </p>
                   </div>
-
-                  {/* Spacer (hidden on mobile, visible on desktop to push layout) */}
-                  <div className={`flex-1 hidden lg:block ${isLeft ? "lg:order-3" : "lg:order-1"}`} />
-                </div>
-              );
-            })}
+                </li>
+              ))}
+            </ol>
           </div>
         </div>
+
+        {/* ── Mobile / tablet: vertical flow with connecting rail ── */}
+        <ol className="lg:hidden relative max-w-md mx-auto">
+          {/* Vertical rail track + fill, aligned to circle centers (left-6 = 24px = 48px circle center) */}
+          {nodes.length > 1 && (
+            <>
+              <div
+                className="absolute top-6 bottom-8 left-6 w-[3px] rounded-full bg-primary/12"
+                aria-hidden="true"
+              />
+              <div
+                ref={vFillRef}
+                className="absolute top-6 bottom-8 left-6 w-[3px] rounded-full bg-primary/70 origin-top"
+                style={{ transform: "scaleY(0)", willChange: "transform" }}
+                aria-hidden="true"
+              />
+            </>
+          )}
+
+          {nodes.map((node, idx) => (
+            <li
+              key={idx}
+              className="joc-step relative flex gap-5 pb-10 last:pb-0"
+            >
+              <div className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-serif text-lg font-bold shadow-md shadow-primary/25 ring-4 ring-background">
+                {node.num}
+              </div>
+              <div className="pt-1 space-y-1.5">
+                <h3 className="text-lg font-bold font-serif text-foreground">
+                  {node.title}
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed text-pretty">
+                  {node.desc}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );

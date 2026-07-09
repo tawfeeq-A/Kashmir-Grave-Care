@@ -28,7 +28,7 @@ export default function OfflinePage() {
           {/* Retry button */}
           <button
             onClick={() => window.location.reload()}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.97]"
+            className="btn-base btn-primary gap-2 px-6 py-3 text-sm"
           >
             <RefreshCw className="w-4 h-4" />
             Try Again
