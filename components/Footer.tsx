@@ -92,7 +92,7 @@ export default function Footer({ onOpenAdmin }: { onOpenAdmin?: () => void }) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           {/* Brand Info */}
           <div className="space-y-4">
-            <Link href="/" className="flex items-center space-x-2.5 group" aria-label="Kashmir Grave Care — Home">
+            <Link href="/" className="flex items-center space-x-2.5 group" aria-label="Grave Care Kashmir — Home">
               <Image
                 src="/images/logo.jpg"
                 alt=""
@@ -121,7 +121,7 @@ export default function Footer({ onOpenAdmin }: { onOpenAdmin?: () => void }) {
             <ul className="space-y-2.5">
               {[
                 { href: "/", label: "Home" },
-                { href: "/services", label: "Services & Pricing" },
+                { href: "/services", label: "Services & Packages" },
                 { href: "/about", label: "Our Story" },
                 { href: "/contact", label: "Book a Service" },
               ].map((link) => (

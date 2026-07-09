@@ -87,12 +87,12 @@ export default function Services() {
                 {content.servicesPageHeading || "Our Maintenance & Restoration Services"}
               </h1>
               <p className="mt-4 text-muted-foreground text-base md:text-lg">
-                {content.servicesPageSubtext || "We offer flexible programs and specialized custom treatments to fit your family's needs. Pricing varies based on grave size, location, and condition."}
+                {content.servicesPageSubtext || "We offer flexible packages and specialized custom treatments to fit your family's needs. Each package is tailored to the grave's size, location, and condition."}
               </p>
             </div>
           </ScrollReveal>
 
-          {/* Pricing Grid */}
+          {/* Packages Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20 items-stretch">
             {packages.map((pkg, idx) => (
               <ScrollReveal key={pkg.name} direction="up" delay={idx * 0.15}>

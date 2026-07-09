@@ -1,8 +1,8 @@
-/// Kashmir Grave Care — Service Worker v3
+/// Grave Care Kashmir — Service Worker v3
 /// Strategies: Cache-first for static assets, network-first for pages,
 /// stale-while-revalidate for images. Graceful offline fallback.
 
-const CACHE_VERSION = "gck-v3";
+const CACHE_VERSION = "gck-v4";
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PAGES_CACHE = `${CACHE_VERSION}-pages`;
 const IMAGES_CACHE = `${CACHE_VERSION}-images`;

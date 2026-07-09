@@ -19,7 +19,7 @@ grave-care-kashmir/
 │   ├── _document.tsx       # HTML — fonts, favicon, PWA manifest, theme-init, security meta
 │   ├── index.tsx           # Homepage — Hero → Intro (image + text) → Services → Before/After → Timeline → Stats → Eco Horizontal Scroll → CTA
 │   ├── about.tsx           # About — Story, Pillars, Cemeteries served
-│   ├── services.tsx        # Services & pricing — 3 packages + custom addons + WorkGallery
+│   ├── services.tsx        # Services & packages — 3 packages + custom addons + WorkGallery
 │   ├── work.tsx            # Portfolio gallery — Instagram/Facebook media from Supabase
 │   └── contact.tsx         # Multi-step booking form (4 steps) — Supabase + WhatsApp/email
 ├── components/
@@ -463,7 +463,7 @@ Verified: `npx tsc --noEmit` clean; `npm run build` clean (7 static pages, homep
 Comprehensive Progressive Web App upgrade to pass Lighthouse PWA installability checks and deliver a polished native-app experience on all platforms.
 
 #### Web App Manifest (`public/manifest.json`) — complete rewrite:
-- `name`: "Kashmir Grave Care", `short_name`: "GraveCare"
+- `name`: "Grave Care Kashmir", `short_name`: "GraveCare"
 - `display`: standalone (no browser chrome), `display_override`: ["standalone", "minimal-ui"]
 - `background_color` + `theme_color`: `#1E5C45` (brand green)
 - **11 icons**: 9 standard (48–512px, purpose: any) + 2 maskable (192, 512) with 10% safe-zone padding on brand-green background
@@ -573,6 +573,14 @@ Full refinement pass (not a redesign) to lift the product to premium, world-clas
 - Existing a11y retained/strengthened: `focus-ring` on all buttons, landmark roles, skip-to-content link, comprehensive reduced-motion
 
 Verified: `npx tsc --noEmit` clean; `npm run build` clean (8 static pages; homepage 272 KB First Load JS, steady).
+
+---
+
+### 2026-07-09 — App name + terminology update
+
+- **PWA/app name** set to **"Grave Care Kashmir"** everywhere: `manifest.json` (`name`), `_document.tsx` (`application-name`, `apple-mobile-web-app-title`), `offline.tsx` (title + branding), Navbar/Footer logo `aria-label`, `sw.js` header. (Site title in `_app.tsx` already used this order.)
+- **Removed all "pricing/price" wording** in favor of "packages": `contentSchema.ts` (`beforeAfterLink` → "Explore our packages", `pillar2Text`, `servicesPageSubtext` → "flexible packages … each package is tailored…"), `services.tsx` (subtext fallback + "Packages Grid" comment), `about.tsx` (pillar2 fallback), `Footer.tsx` nav ("Services & Packages"), `index.tsx` ("View all service packages").
+- **SW cache bumped** `gck-v3` → `gck-v4` so installed PWA clients refresh the manifest name and cached pages.
 
 ---
 

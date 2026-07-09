@@ -5,7 +5,7 @@ export default function OfflinePage() {
   return (
     <>
       <Head>
-        <title>Offline — Kashmir Grave Care</title>
+        <title>Offline — Grave Care Kashmir</title>
       </Head>
       <div className="min-h-[80vh] flex items-center justify-center px-6">
         <div className="text-center max-w-md mx-auto space-y-6">
@@ -36,7 +36,7 @@ export default function OfflinePage() {
 
           {/* Subtle branding */}
           <p className="text-xs text-muted-foreground/60 pt-4">
-            Kashmir Grave Care &middot; Preserving Peace &amp; Memories
+            Grave Care Kashmir &middot; Preserving Peace &amp; Memories
           </p>
         </div>
       </div>

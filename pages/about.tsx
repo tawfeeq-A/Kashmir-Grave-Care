@@ -17,7 +17,7 @@ export default function About() {
     },
     {
       title: content.pillar2Title || "Transparency",
-      desc: content.pillar2Text || "We provide clear, honest pricing and comprehensive photo/video reports so you know exactly what care was provided.",
+      desc: content.pillar2Text || "We provide clear, honest packages and comprehensive photo/video reports so you know exactly what care was provided.",
       icon: <ShieldCheck className="h-6 w-6" />,
     },
     {

@@ -58,7 +58,7 @@ export const contentSchema: ContentGroup[] = [
       { key: "beforeAfterBullet1", label: "Bullet Point 1", type: "text", defaultValue: "Delicate stain removal from premium marble" },
       { key: "beforeAfterBullet2", label: "Bullet Point 2", type: "text", defaultValue: "Weed extraction & maintaining neat local climate-ready grass" },
       { key: "beforeAfterBullet3", label: "Bullet Point 3", type: "text", defaultValue: "Calligraphy re-inking (Gold, Black, or White paint)" },
-      { key: "beforeAfterLink", label: "Link Text", type: "text", defaultValue: "Explore pricing packages" },
+      { key: "beforeAfterLink", label: "Link Text", type: "text", defaultValue: "Explore our packages" },
       { key: "sliderBeforeLabel", label: "Before Image Label", type: "text", defaultValue: "Before Care (Weathered & Overgrown)" },
       { key: "sliderAfterLabel", label: "After Image Label", type: "text", defaultValue: "After Care (Restored, Green & Clean)" },
     ]
@@ -128,7 +128,7 @@ export const contentSchema: ContentGroup[] = [
       { key: "pillar1Title", label: "Pillar 1 Title", type: "text", defaultValue: "Respect (Adab)" },
       { key: "pillar1Text", label: "Pillar 1 Text", type: "textarea", defaultValue: "Every action we take in the graveyard is performed with the utmost respect, following Islamic guidelines for visiting and maintaining resting places." },
       { key: "pillar2Title", label: "Pillar 2 Title", type: "text", defaultValue: "Transparency" },
-      { key: "pillar2Text", label: "Pillar 2 Text", type: "textarea", defaultValue: "We provide clear, honest pricing and comprehensive photo/video reports so you know exactly what care was provided." },
+      { key: "pillar2Text", label: "Pillar 2 Text", type: "textarea", defaultValue: "We provide clear, honest packages and comprehensive photo/video reports so you know exactly what care was provided." },
       { key: "pillar3Title", label: "Pillar 3 Title", type: "text", defaultValue: "Excellence (Ihsan)" },
       { key: "pillar3Text", label: "Pillar 3 Text", type: "textarea", defaultValue: "From removing the smallest weeds to restoring intricate marble calligraphy, we perform our work to the highest possible standard." },
     ]
@@ -157,7 +157,7 @@ export const contentSchema: ContentGroup[] = [
     fields: [
       { key: "servicesPageTag", label: "Top Pill Tag", type: "text", defaultValue: "Transparent Care Services" },
       { key: "servicesPageHeading", label: "Main Heading", type: "text", defaultValue: "Our Maintenance & Restoration Services" },
-      { key: "servicesPageSubtext", label: "Subtext", type: "textarea", defaultValue: "We offer flexible programs and specialized custom treatments to fit your family's needs. Pricing varies based on grave size, location, and condition." },
+      { key: "servicesPageSubtext", label: "Subtext", type: "textarea", defaultValue: "We offer flexible packages and specialized custom treatments to fit your family's needs. Each package is tailored to the grave's size, location, and condition." },
     ]
   },
   {
