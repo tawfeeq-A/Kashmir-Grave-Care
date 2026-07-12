@@ -309,8 +309,8 @@ export default function Home() {
                   <ImageBeforeAfter
                     beforeImage="/images/grave-before-final.jpg"
                     afterImage="/images/grave-after-final.jpg"
-                    beforeLabel={content.sliderBeforeLabel}
-                    afterLabel={content.sliderAfterLabel}
+                    beforeLabel={content.sliderBeforeLabel || "Before Care (Weathered & Overgrown)"}
+                    afterLabel={content.sliderAfterLabel || "After Care (Restored, Green & Clean)"}
                   />
                 </div>
               </Scroll3DTilt>
