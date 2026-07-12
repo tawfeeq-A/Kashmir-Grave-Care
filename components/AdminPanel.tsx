@@ -72,27 +72,27 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
     });
 
     if (settings) {
-      // Pre-populate form with actual values from DB, falling back to defaults
+      // Show actual DB values. Empty fields display placeholder text with defaults.
       setFormData({
         brand_name: settings.brand_name || TOP_LEVEL_DEFAULTS.brand_name,
         whatsapp_number: settings.whatsapp_number || TOP_LEVEL_DEFAULTS.whatsapp_number,
         whatsapp_message: settings.whatsapp_message ?? '',
         instagram_profile_url: settings.instagram_profile_url || '',
         facebook_profile_url: settings.facebook_profile_url || '',
-        hero_title: settings.hero_title || TOP_LEVEL_DEFAULTS.hero_title,
-        hero_subtitle: settings.hero_subtitle || TOP_LEVEL_DEFAULTS.hero_subtitle,
-        cta_title: settings.cta_title || TOP_LEVEL_DEFAULTS.cta_title,
-        cta_text: settings.cta_text || TOP_LEVEL_DEFAULTS.cta_text,
+        hero_title: settings.hero_title || '',
+        hero_subtitle: settings.hero_subtitle || '',
+        cta_title: settings.cta_title || '',
+        cta_text: settings.cta_text || '',
       });
 
-      // Pre-populate content_json with actual values, filling empty ones with schema defaults
+      // Show actual DB values for content_json. Empty fields show schema defaults as placeholder text.
       const existingContent = settings.content_json || {};
       const populatedContent: Record<string, string> = {};
       
       for (const group of contentSchema) {
         for (const field of group.fields) {
-          // Use existing DB value if set, otherwise use schema default
-          populatedContent[field.key] = existingContent[field.key] || field.defaultValue || '';
+          // Show actual DB value; empty means the page will use its hardcoded default
+          populatedContent[field.key] = existingContent[field.key] || '';
         }
       }
       
@@ -502,14 +502,27 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                     <button
                       type="button"
                       onClick={() => {
-                        if (!confirm('Reset all website text fields to their default values? This will clear any custom text you have entered. You still need to press "Save Changes" to apply.')) return;
+                        if (!confirm('Reset ALL website text to defaults?\n\nThis will clear:\n• Hero title, subtitle & CTA text (General tab)\n• All Website Text fields\n\nYou still need to press "Save Changes" to apply.')) return;
+                        // Reset content_json fields (Website Text tab)
+                        // Preserve before/after image labels — they are content-specific, not generic copy
+                        const protectedKeys = new Set(['sliderBeforeLabel', 'sliderAfterLabel']);
                         const resetContent: Record<string, string> = {};
                         for (const group of contentSchema) {
                           for (const field of group.fields) {
-                            resetContent[field.key] = '';
+                            resetContent[field.key] = protectedKeys.has(field.key)
+                              ? (contentData[field.key] || '')
+                              : '';
                           }
                         }
                         setContentData(resetContent);
+                        // Also reset General tab text fields (hero & CTA)
+                        setFormData(prev => ({
+                          ...prev,
+                          hero_title: '',
+                          hero_subtitle: '',
+                          cta_title: '',
+                          cta_text: '',
+                        }));
                         setHasChanges(true);
                       }}
                       className="shrink-0 px-4 py-2 text-xs font-bold uppercase tracking-wide text-amber-200 bg-amber-500/20 border border-amber-500/40 rounded-lg hover:bg-amber-500/30 transition-colors whitespace-nowrap"

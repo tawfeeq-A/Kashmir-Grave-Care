@@ -50,45 +50,46 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
         if (typeof window !== 'undefined') {
           localStorage.setItem('gck_settings', JSON.stringify(settingsRes.data));
         }
+      } else if (typeof window !== 'undefined') {
+        // Supabase returned no data — try localStorage fallback (offline)
+        const cached = localStorage.getItem('gck_settings');
+        if (cached) {
+          try { setSettings(JSON.parse(cached)); } catch { /* ignore */ }
+        }
       }
-      
+
       if (mediaRes.data) {
         setWorkMedia(mediaRes.data);
         if (typeof window !== 'undefined') {
           localStorage.setItem('gck_media', JSON.stringify(mediaRes.data));
         }
+      } else if (typeof window !== 'undefined') {
+        const cached = localStorage.getItem('gck_media');
+        if (cached) {
+          try { setWorkMedia(JSON.parse(cached)); } catch { /* ignore */ }
+        }
       }
     } catch (error) {
       console.error('Error fetching site data:', error);
+      // Network error — fall back to localStorage cache (offline support)
+      if (typeof window !== 'undefined') {
+        const cachedSettings = localStorage.getItem('gck_settings');
+        const cachedMedia = localStorage.getItem('gck_media');
+        if (cachedSettings) {
+          try { setSettings(JSON.parse(cachedSettings)); } catch { /* ignore */ }
+        }
+        if (cachedMedia) {
+          try { setWorkMedia(JSON.parse(cachedMedia)); } catch { /* ignore */ }
+        }
+      }
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    // Stale-While-Revalidate: load immediately from localStorage cache on client mount
-    if (typeof window !== 'undefined') {
-      const cachedSettings = localStorage.getItem('gck_settings');
-      const cachedMedia = localStorage.getItem('gck_media');
-      
-      if (cachedSettings) {
-        try {
-          setSettings(JSON.parse(cachedSettings));
-          setLoading(false); // cached data exists, disable block loader immediately
-        } catch (e) {
-          console.warn('Failed to parse cached settings:', e);
-        }
-      }
-      
-      if (cachedMedia) {
-        try {
-          setWorkMedia(JSON.parse(cachedMedia));
-        } catch (e) {
-          console.warn('Failed to parse cached media:', e);
-        }
-      }
-    }
-    
+    // Fetch fresh data from Supabase on mount.
+    // localStorage is used only as a fallback when Supabase is unreachable.
     fetchSettings();
   }, []);
 
