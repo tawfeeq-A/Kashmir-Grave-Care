@@ -582,6 +582,52 @@ Verified: `npx tsc --noEmit` clean; `npm run build` clean (8 static pages; homep
 - **Removed all "pricing/price" wording** in favor of "packages": `contentSchema.ts` (`beforeAfterLink` → "Explore our packages", `pillar2Text`, `servicesPageSubtext` → "flexible packages … each package is tailored…"), `services.tsx` (subtext fallback + "Packages Grid" comment), `about.tsx` (pillar2 fallback), `Footer.tsx` nav ("Services & Packages"), `index.tsx` ("View all service packages").
 - **SW cache bumped** `gck-v3` → `gck-v4` so installed PWA clients refresh the manifest name and cached pages.
 
+### 2026-07-12 — Folder Rename, Text Overhaul & Schema Restoration
+
+#### Accomplished:
+1. **Workspace Rename & Permissions**: The project root was renamed from `Claude` to `Workspace` (`c:\Users\Tawfeeq\Desktop\Workspace\projects\grave-care-kashmir`). Updated AI permissions to allow read/write in the new path.
+2. **Warm, Empathetic Text Overhaul**: Rewrote the hero copy to ensure a warm, supportive, and comforting tone for grieving families ("Your family's resting place. Kept clean and cared for.").
+3. **Horizontal Scroll Slider Fixed**: Refactored the `HorizontalScrollSlider.tsx` to force pinning on mobile devices as well, making the horizontal scroll the hero interaction on all viewports without content clipping.
+4. **Supabase Schema Reconstructed**: Recreated `docs/supabase_schema.sql` to include all table creation scripts (including `recovery_pins`), the required RPC functions (`verify_recovery_pin`, `update_recovery_pin`) using `pgcrypto`, seeded the `recovery_pins` table, and applied the modern RLS policies. This resolves the `column "pin" of relation "site_settings" does not exist` error.
+
+### 2026-07-12 — Dock Animation Redesign, Eco Auto-Carousel & PWA Icon Fix
+
+#### Dock Rewrite (`components/ui/dock-two.tsx`):
+- **Butter-smooth stagger animation**: Replaced `AnimatePresence mode="wait"` scale-swap with Framer Motion `variants` system. Items bloom upward with staggered spring (`staggerChildren: 0.045`, `delayChildren: 0.05`), each scaling from `0.4` → `1` with opacity fade. Exit reverses with faster stagger (`0.025`). Spring tuned for silky feel: `stiffness: 260, damping: 30, mass: 0.8`.
+- **macOS-inspired vertical magnification**: Integrates `useMotionValue`, `useTransform`, and `useSpring` to dynamically scale icons (from `1.0` to `1.25`) based on mouse Y coordinate distance. Cached layout coordinates on mount/resize/scroll to eliminate browser reflows (no layout thrashing).
+- **Desktop/Mobile context-adaptive layouts**: Mobile screens (< 768px) display permanent inline text labels next to icons for absolute clarity. Desktop screens (768px+) show only icons, using the magnification effect alongside clean tooltips that slide in from the left on hover.
+- **Burger ↔ X icon morph**: Collapsed shows `Menu` icon with `rotate: 90 → 0` spring entrance. Expanded shows `X` (Close) icon at top with `rotate: -90 → 0` morph. Clear affordance on touch.
+- **Universal top-right corner placement**: Dock is positioned at `top-3 right-3 sm:top-5 sm:right-6` when unscrolled, and transitions to `top-3 right-3 sm:top-3 sm:right-6` when scrolled. Set custom transition `transition-[top,right,background-color,border-color,box-shadow] duration-300` to synchronize perfectly with the navbar's vertical center during scroll transitions.
+- **Header logo-size alignment**: Resized the collapsed trigger button from padding-based sizing (`48px`) to exact matches with the header elements (`h-8 w-8` on mobile and `h-9 w-9` on desktop), matching the logo and social icon dimensions exactly.
+- **Unified Socials & Dock Layout**: Completely refactored [Navbar.tsx](file:///c:/Users/Tawfeeq/Desktop/Workspace/projects/grave-care-kashmir/components/Navbar.tsx) and [dock-two.tsx](file:///c:/Users/Tawfeeq/Desktop/Workspace/projects/grave-care-kashmir/components/ui/dock-two.tsx) to render the Instagram and Facebook icons directly inside the floating Dock component wrapper.
+  - **Identical Spacing**: By using a single parent Flex container with `gap-1.5 sm:gap-2` in the Dock, the spacing between Instagram and Facebook is mathematically and visually identical to the spacing between Facebook and the Dock trigger button.
+  - **Clean Navbar**: Removed duplicate rendering logic, layout parameters, and context queries from the Navbar, reducing footprint.
+- **Disabled Auto-Open**: Changed the initial state of `isExpanded` and `expandedRef` to `false` so the dock remains collapsed on page load, displaying only the burger menu button and pulse dot hint.
+- **Persistent Dock (scroll-hide removed)**: Removed the scroll event listener and `hidden` state logic. The dock now floats permanently in the top-right corner on both desktop and mobile, ensuring instant accessibility and focusing entirely on open/close click and hover transitions.
+- **Next.js Hydration Guard**: Implemented client-side mount checks (`mounted` state) to prevent hydration mismatches from screen-size and hover-support discrepancies.
+
+#### Deletion of Unused Files:
+- **`MaskReveal.tsx` Deleted**: Removed the obsolete entrance mask wrapper (`MaskReveal.tsx`) and its references in `_app.tsx` to streamline bundle size and remove inactive passthrough components.
+
+#### Before/After Comparison Image (`components/ImageBeforeAfter.tsx`):
+- **Swapped Labels Layout**: Positioned the "After Care" label in the bottom-left corner (`bottom-4 left-4`) and the "Before Care" label in the bottom-right corner (`bottom-4 right-4`). This aligns perfectly with the visual slider's layout where the After image is on the left side of the divider and the Before image is on the right side.
+
+#### Eco Auto-Carousel (`components/HorizontalScrollSlider.tsx`):
+- **Viewport Visibility-Triggered Timer**: Setup `IntersectionObserver` on the carousel section. Bound `ref={sectionRef}` to the mobile layout's `<section>` element (which was previously missing). The auto-advance rotation timer now ONLY starts when the carousel enters the viewport. When the section leaves the viewport, the timer is cleared to save mobile system resources.
+- **First-Slide Guarantee**: On viewport entry, the scroll position is instantly reset to the first image (slide 0) with `scrollTo({ left: 0, behavior: "auto" })` (bypassing browser scroll-restoration memory), ensuring the user always starts on the first tile and waits before the first forward rotation.
+- **Optimized Rotation Timing**: Sped up rotation from 4 seconds to **3 seconds** (`AUTO_INTERVAL = 3000`), keeping native thumb swiping fully responsive.
+- **Touch interrupt**: Swipe/touch pauses auto-advance for 8s, then resumes.
+- **Dot tap pauses**: Tapping a dot indicator also pauses and jumps.
+- **Desktop GSAP scroll unchanged**.
+
+#### PWA Icon Fix:
+- **`scripts/generate-icons.js`**: Standard icons `fit: "cover"` (was `"contain"` with green padding). Logo fills full icon.
+- **`manifest.json`**: `background_color` → `#ffffff`.
+- **`sw.js`**: Cache `gck-v4` → `gck-v5`.
+- **All icons regenerated**.
+
+#### Build: `npx tsc --noEmit` clean; `npm run build` clean after clearing stale `.next` cache (8 pages, 273 KB First Load JS).
+
 ---
 
 ## 🚀 Deployment Checklist (before go-live)

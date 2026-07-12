@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 
@@ -19,6 +19,10 @@ interface HorizontalScrollSliderProps {
   tagIcon?: React.ReactNode;
 }
 
+/* Auto-advance interval (ms) and pause after user interaction (ms) */
+const AUTO_INTERVAL = 3000;
+const TOUCH_PAUSE = 8000;
+
 export default function HorizontalScrollSlider({
   slides,
   sectionTitle,
@@ -30,6 +34,15 @@ export default function HorizontalScrollSlider({
   const carouselRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+
+  // Auto-advance refs (mobile only)
+  const autoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isPausedRef = useRef(false);
+  const activeIndexRef = useRef(0);
+
+  // Keep ref in sync
+  useEffect(() => { activeIndexRef.current = activeIndex; }, [activeIndex]);
 
   // Detect mobile on mount + resize
   useEffect(() => {
@@ -99,6 +112,92 @@ export default function HorizontalScrollSlider({
     return () => el.removeEventListener("scroll", handleScroll);
   }, [isMobile]);
 
+  // ─── MOBILE: Auto-advance timer with looping ───
+  const scrollToSlide = useCallback((idx: number) => {
+    if (!carouselRef.current) return;
+    carouselRef.current.scrollTo({
+      left: idx * carouselRef.current.offsetWidth,
+      behavior: "smooth",
+    });
+  }, []);
+
+  const startAutoAdvance = useCallback(() => {
+    if (autoTimerRef.current) clearInterval(autoTimerRef.current);
+    autoTimerRef.current = setInterval(() => {
+      if (isPausedRef.current) return;
+      const nextIdx = (activeIndexRef.current + 1) % slides.length;
+      scrollToSlide(nextIdx);
+    }, AUTO_INTERVAL);
+  }, [slides.length, scrollToSlide]);
+
+  const pauseAutoAdvance = useCallback(() => {
+    isPausedRef.current = true;
+    if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current);
+    pauseTimerRef.current = setTimeout(() => {
+      isPausedRef.current = false;
+    }, TOUCH_PAUSE);
+  }, []);
+
+  // Start auto-advance on mobile only when the carousel enters the viewport
+  useEffect(() => {
+    if (!isMobile || !sectionRef.current) return;
+
+    const section = sectionRef.current;
+
+    // Initially force slide 0 instantly
+    if (carouselRef.current) {
+      carouselRef.current.scrollTo({ left: 0, behavior: "auto" });
+    }
+    setActiveIndex(0);
+    activeIndexRef.current = 0;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting) {
+          // Reset to first slide if it was navigated away while offscreen, then start rotation
+          if (carouselRef.current && activeIndexRef.current !== 0) {
+            carouselRef.current.scrollTo({ left: 0, behavior: "auto" });
+            setActiveIndex(0);
+            activeIndexRef.current = 0;
+          }
+          isPausedRef.current = false;
+          startAutoAdvance();
+        } else {
+          // Pause rotation when scrolled out of view to save mobile resources
+          if (autoTimerRef.current) {
+            clearInterval(autoTimerRef.current);
+            autoTimerRef.current = null;
+          }
+        }
+      },
+      {
+        threshold: 0.15, // Trigger when 15% of the component is visible
+      }
+    );
+
+    observer.observe(section);
+
+    return () => {
+      observer.disconnect();
+      if (autoTimerRef.current) clearInterval(autoTimerRef.current);
+      if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current);
+    };
+  }, [isMobile, startAutoAdvance]);
+
+  // Pause on user touch interaction
+  useEffect(() => {
+    if (!isMobile || !carouselRef.current) return;
+    const el = carouselRef.current;
+    const onTouch = () => pauseAutoAdvance();
+    el.addEventListener("touchstart", onTouch, { passive: true });
+    el.addEventListener("pointerdown", onTouch);
+    return () => {
+      el.removeEventListener("touchstart", onTouch);
+      el.removeEventListener("pointerdown", onTouch);
+    };
+  }, [isMobile, pauseAutoAdvance]);
+
   // ─── Shared slide content (both layouts use this) ───
   const Panel = (slide: SlideData, idx: number, active: boolean) => (
     <div className="max-w-5xl lg:max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-8 lg:gap-20 items-center">
@@ -148,11 +247,11 @@ export default function HorizontalScrollSlider({
   );
 
   // ═══════════════════════════════════════════════════
-  // MOBILE: Native CSS-snap carousel (no GSAP, no pin, no scroll hijack)
+  // MOBILE: Auto-rotating carousel (no arrows, timer-driven)
   // ═══════════════════════════════════════════════════
   if (isMobile) {
     return (
-      <section className="relative bg-background border-b border-border/40 py-12 overflow-hidden">
+      <section ref={sectionRef} className="relative bg-background border-b border-border/40 py-12 overflow-hidden">
         {/* Header */}
         <div className="px-4 mb-6">
           {sectionTag && (
@@ -167,42 +266,8 @@ export default function HorizontalScrollSlider({
           )}
         </div>
 
-        {/* Swipeable carousel with navigation arrows */}
+        {/* Auto-rotating carousel — no arrows */}
         <div className="relative">
-          {/* Left arrow */}
-          <button
-            onClick={() => {
-              const prev = Math.max(0, activeIndex - 1);
-              carouselRef.current?.scrollTo({
-                left: prev * (carouselRef.current?.offsetWidth || 0),
-                behavior: "smooth",
-              });
-            }}
-            className={`absolute left-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-background/90 border border-border/60 shadow-md flex items-center justify-center text-foreground/70 hover:text-foreground transition-all ${
-              activeIndex === 0 ? "opacity-30 pointer-events-none" : "opacity-100"
-            }`}
-            aria-label="Previous slide"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-          </button>
-
-          {/* Right arrow */}
-          <button
-            onClick={() => {
-              const next = Math.min(slides.length - 1, activeIndex + 1);
-              carouselRef.current?.scrollTo({
-                left: next * (carouselRef.current?.offsetWidth || 0),
-                behavior: "smooth",
-              });
-            }}
-            className={`absolute right-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-background/90 border border-border/60 shadow-md flex items-center justify-center text-foreground/70 hover:text-foreground transition-all ${
-              activeIndex === slides.length - 1 ? "opacity-30 pointer-events-none" : "opacity-100"
-            }`}
-            aria-label="Next slide"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-          </button>
-
           <div
             ref={carouselRef}
             className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
@@ -243,21 +308,19 @@ export default function HorizontalScrollSlider({
           </div>
         </div>
 
-        {/* Dot indicators */}
+        {/* Dot indicators — tapping pauses auto-advance and jumps */}
         <div className="flex items-center justify-center gap-2 mt-5">
           {slides.map((_, idx) => (
             <button
               key={idx}
               onClick={() => {
-                carouselRef.current?.scrollTo({
-                  left: idx * (carouselRef.current?.offsetWidth || 0),
-                  behavior: "smooth",
-                });
+                scrollToSlide(idx);
+                pauseAutoAdvance();
               }}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              className={`h-2 rounded-full transition-all duration-500 ease-out ${
                 idx === activeIndex
                   ? "bg-primary w-6"
-                  : "bg-border hover:bg-muted-foreground/40"
+                  : "bg-border hover:bg-muted-foreground/40 w-2"
               }`}
               aria-label={`Go to slide ${idx + 1}`}
             />

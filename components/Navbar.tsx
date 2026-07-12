@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Instagram, Facebook } from "lucide-react";
-import { useSite } from "@/context/SiteContext";
 
 export default function Navbar() {
-  const { settings } = useSite();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -26,7 +23,7 @@ export default function Navbar() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between h-10 sm:h-12">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2.5 group" aria-label="Grave Care Kashmir — Home">
             <Image
@@ -41,32 +38,6 @@ export default function Navbar() {
               Grave Care Kashmir
             </span>
           </Link>
-
-          {/* Social Icons */}
-          <div className="flex items-center space-x-2 sm:space-x-3 text-muted-foreground">
-            {settings?.instagram_profile_url && (
-              <a
-                href={settings.instagram_profile_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-primary transition-colors p-2 rounded-lg hover:bg-primary/5"
-                aria-label="Instagram"
-              >
-                <Instagram className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
-              </a>
-            )}
-            {settings?.facebook_profile_url && (
-              <a
-                href={settings.facebook_profile_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-primary transition-colors p-2 rounded-lg hover:bg-primary/5"
-                aria-label="Facebook"
-              >
-                <Facebook className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
-              </a>
-            )}
-          </div>
         </div>
       </div>
     </header>

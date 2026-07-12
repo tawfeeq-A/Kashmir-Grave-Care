@@ -6,19 +6,17 @@
  * 
  * Requires: sharp (installed as devDependency)
  * 
+ * Standard icons: fit "cover" — the logo fills the full icon with no
+ * green padding, so the logo's own dark background IS the icon bg.
+ * 
+ * Maskable icons: 10% safe-zone padding on brand-green (#1E5C45)
+ * background, per the maskable spec.
+ * 
  * Outputs:
- *   public/icons/icon-48.png
- *   public/icons/icon-72.png
- *   public/icons/icon-96.png
- *   public/icons/icon-128.png
- *   public/icons/icon-144.png
- *   public/icons/icon-152.png
- *   public/icons/icon-192.png
- *   public/icons/icon-384.png
- *   public/icons/icon-512.png
- *   public/icons/maskable-192.png
- *   public/icons/maskable-512.png
- *   public/favicon.ico (48x48)
+ *   public/icons/icon-48..512.png   (standard, full-bleed logo)
+ *   public/icons/maskable-192.png   (maskable, padded)
+ *   public/icons/maskable-512.png   (maskable, padded)
+ *   public/favicon.png              (48x48)
  */
 
 const sharp = require("sharp");
@@ -40,14 +38,16 @@ async function generateIcons() {
 
   const sourceBuffer = fs.readFileSync(SOURCE);
 
-  // Generate standard icons
+  // Generate standard icons — fit:"cover" so the logo fills the icon fully.
+  // No green background padding. The logo's own dark circular background
+  // becomes the visible icon background.
   for (const size of SIZES) {
     const outPath = path.join(OUT_DIR, `icon-${size}.png`);
     await sharp(sourceBuffer)
-      .resize(size, size, { fit: "contain", background: { r: 30, g: 92, b: 69, alpha: 1 } })
+      .resize(size, size, { fit: "cover" })
       .png({ quality: 90, compressionLevel: 9 })
       .toFile(outPath);
-    console.log(`✓ icon-${size}.png`);
+    console.log(`✓ icon-${size}.png (cover, no bg padding)`);
   }
 
   // Generate maskable icons (with 10% safe zone padding on brand background)
@@ -56,7 +56,7 @@ async function generateIcons() {
     const innerSize = Math.round(size * 0.8); // 80% of canvas = 10% padding each side
     
     const inner = await sharp(sourceBuffer)
-      .resize(innerSize, innerSize, { fit: "contain", background: { r: 30, g: 92, b: 69, alpha: 1 } })
+      .resize(innerSize, innerSize, { fit: "cover" })
       .toBuffer();
 
     await sharp({
@@ -70,16 +70,16 @@ async function generateIcons() {
       .composite([{ input: inner, gravity: "center" }])
       .png({ quality: 90, compressionLevel: 9 })
       .toFile(outPath);
-    console.log(`✓ maskable-${size}.png`);
+    console.log(`✓ maskable-${size}.png (safe-zone padded)`);
   }
 
-  // Generate favicon (48x48 PNG — modern browsers support PNG favicons)
+  // Generate favicon (48x48 PNG — full-bleed, no bg padding)
   const faviconPath = path.join(FAVICON_DIR, "favicon.png");
   await sharp(sourceBuffer)
-    .resize(48, 48, { fit: "contain", background: { r: 30, g: 92, b: 69, alpha: 1 } })
+    .resize(48, 48, { fit: "cover" })
     .png({ quality: 90 })
     .toFile(faviconPath);
-  console.log(`✓ favicon.png`);
+  console.log(`✓ favicon.png (cover)`);
 
   console.log("\n✅ All PWA icons generated successfully!");
 }

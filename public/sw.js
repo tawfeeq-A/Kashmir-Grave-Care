@@ -2,7 +2,7 @@
 /// Strategies: Cache-first for static assets, network-first for pages,
 /// stale-while-revalidate for images. Graceful offline fallback.
 
-const CACHE_VERSION = "gck-v4";
+const CACHE_VERSION = "gck-v5";
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PAGES_CACHE = `${CACHE_VERSION}-pages`;
 const IMAGES_CACHE = `${CACHE_VERSION}-images`;

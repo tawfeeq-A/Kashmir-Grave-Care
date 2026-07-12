@@ -11,7 +11,6 @@ import Footer from "@/components/Footer";
 import ProgressBar from "@/components/ProgressBar";
 import SideDock from "@/components/SideDock";
 import AdminPanel from "@/components/AdminPanel";
-import MaskReveal from "@/components/MaskReveal";
 import SmoothScroll from "@/components/SmoothScroll";
 import { SiteProvider } from "@/context/SiteContext";
 
@@ -97,8 +96,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, interactive-widget=resizes-content" />
       </Head>
       <SmoothScroll>
-        <MaskReveal>
-          <ProgressBar />
+        <ProgressBar />
           
           {/* Global Background 3D Sphere & Particle Animations */}
           <div className="fixed inset-0 -z-10 pointer-events-none opacity-[0.32] dark:opacity-40 transition-colors duration-300">
@@ -167,7 +165,6 @@ export default function App({ Component, pageProps }: AppProps) {
               </button>
             </div>
           )}
-        </MaskReveal>
       </SmoothScroll>
     </SiteProvider>
   );

@@ -72,7 +72,7 @@ export default function ImageBeforeAfter({
             className="w-full h-full object-cover pointer-events-none"
           />
           <div className="absolute inset-0 bg-black/10" />
-          <div className="absolute bottom-4 left-4 bg-black/60 text-white text-xs font-semibold px-3 py-1.5 rounded-md backdrop-blur-sm pointer-events-none">
+          <div className="absolute bottom-4 right-4 bg-black/60 text-white text-xs font-semibold px-3 py-1.5 rounded-md backdrop-blur-sm pointer-events-none">
             {beforeLabel}
           </div>
         </div>
@@ -89,7 +89,7 @@ export default function ImageBeforeAfter({
             style={{ width: containerRef.current?.getBoundingClientRect().width }}
           />
           <div className="absolute inset-0 bg-black/5" />
-          <div className="absolute bottom-4 right-4 bg-primary/90 text-primary-foreground text-xs font-semibold px-3 py-1.5 rounded-md backdrop-blur-sm pointer-events-none">
+          <div className="absolute bottom-4 left-4 bg-primary/90 text-primary-foreground text-xs font-semibold px-3 py-1.5 rounded-md backdrop-blur-sm pointer-events-none">
             {afterLabel}
           </div>
         </div>

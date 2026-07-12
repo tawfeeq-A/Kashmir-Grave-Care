@@ -53,5 +53,11 @@ export default function SideDock() {
     },
   ];
 
-  return <Dock items={dockItems} />;
+  return (
+    <Dock
+      items={dockItems}
+      instagramUrl={settings?.instagram_profile_url}
+      facebookUrl={settings?.facebook_profile_url}
+    />
+  );
 }
