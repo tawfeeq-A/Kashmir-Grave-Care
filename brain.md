@@ -605,6 +605,7 @@ Verified: `npx tsc --noEmit` clean; `npm run build` clean (8 static pages; homep
 - **Disabled Auto-Open**: Changed the initial state of `isExpanded` and `expandedRef` to `false` so the dock remains collapsed on page load, displaying only the burger menu button and pulse dot hint.
 - **Persistent Dock (scroll-hide removed)**: Removed the scroll event listener and `hidden` state logic. The dock now floats permanently in the top-right corner on both desktop and mobile, ensuring instant accessibility and focusing entirely on open/close click and hover transitions.
 - **Next.js Hydration Guard**: Implemented client-side mount checks (`mounted` state) to prevent hydration mismatches from screen-size and hover-support discrepancies.
+- **Service Worker Dev Bypass**: Added conditional checks in `pages/_app.tsx` to completely bypass service worker registration during local development (`localhost` or `process.env.NODE_ENV === 'development'`). Added automatic unregistration logic that scans and deactivates any existing service workers on `localhost` to instantly resolve browser cache conflict loops and Fast Refresh discrepancies.
 
 #### Deletion of Unused Files:
 - **`MaskReveal.tsx` Deleted**: Removed the obsolete entrance mask wrapper (`MaskReveal.tsx`) and its references in `_app.tsx` to streamline bundle size and remove inactive passthrough components.

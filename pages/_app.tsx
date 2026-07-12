@@ -25,9 +25,23 @@ export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const prefersReduced = useReducedMotion();
 
-  // Register service worker with update detection
+  // Register service worker with update detection (disabled in development)
   useEffect(() => {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+
+    // Disable Service Worker in development to prevent dev server / hot reload chunk conflicts
+    if (
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1" ||
+      process.env.NODE_ENV === "development"
+    ) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const registration of registrations) {
+          registration.unregister();
+        }
+      });
+      return;
+    }
 
     let registration: ServiceWorkerRegistration | null = null;
 
