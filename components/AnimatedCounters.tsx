@@ -16,6 +16,11 @@ interface AnimatedCountersProps {
   tagIcon?: React.ReactNode;
 }
 
+// FIX: constant moved outside component — 2π×45 never changes between renders,
+// computing it inside the component body was a micro-waste on every re-render.
+const CIRCLE_RADIUS = 45;
+const CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
+
 export default function AnimatedCounters({
   counters,
   sectionTitle,
@@ -28,11 +33,23 @@ export default function AnimatedCounters({
   const hasAnimated = useRef(false);
   const rafRef = useRef<number | null>(null);
 
+  // FIX: stabilise the `counters` dependency so that parent components
+  // recreating a new array literal on every render (e.g. inline JSX arrays)
+  // don't register a new IntersectionObserver + RAF loop each time.
+  // We fingerprint the counters values; if they haven't changed semantically,
+  // we skip re-registering the observer.
+  const countersFingerprint = counters
+    .map((c) => `${c.value}${c.suffix ?? ""}${c.prefix ?? ""}${c.label}`)
+    .join("|");
+
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
 
-    // Respect reduced-motion: jump straight to final values
+    // Reset so a new counter set (fingerprint changed) re-animates correctly
+    hasAnimated.current = false;
+    setValues(counters.map(() => 0));
+
     const prefersReduced =
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -48,8 +65,7 @@ export default function AnimatedCounters({
 
       const duration = 1800; // ms
       const start = performance.now();
-      // easeOutCubic for a natural deceleration
-      const ease = (t: number) => 1 - Math.pow(1 - t, 3);
+      const ease = (t: number) => 1 - Math.pow(1 - t, 3); // easeOutCubic
 
       const tick = (now: number) => {
         const elapsed = now - start;
@@ -77,7 +93,7 @@ export default function AnimatedCounters({
 
     observer.observe(section);
 
-    // Fallback: if the section is already in view on mount (e.g. very tall screens)
+    // Fallback: already in view on mount (e.g. very tall screens)
     const rect = section.getBoundingClientRect();
     if (rect.top < window.innerHeight && rect.bottom > 0) {
       runCountUp();
@@ -88,7 +104,8 @@ export default function AnimatedCounters({
       observer.disconnect();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [counters]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [countersFingerprint]); // intentional: fingerprint is stable when data hasn't changed
 
   return (
     <section ref={sectionRef} className="py-14 sm:py-20 bg-background/95 md:bg-background/80 md:backdrop-blur-md border-b border-border/40">
@@ -120,10 +137,9 @@ export default function AnimatedCounters({
             const percentage = counter.value > 0
               ? Math.min(100, (values[idx] / counter.value) * 100)
               : 0;
-            const circumference = 2 * Math.PI * 45;
             const dashOffset = counter.value > 0
-              ? circumference - (percentage / 100) * circumference
-              : circumference;
+              ? CIRCUMFERENCE - (percentage / 100) * CIRCUMFERENCE
+              : CIRCUMFERENCE;
 
             return (
               <div
@@ -132,12 +148,12 @@ export default function AnimatedCounters({
               >
                 {/* Circular gauge */}
                 <div className="relative w-20 h-20 sm:w-28 sm:h-28">
-                  <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                  <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100" aria-hidden="true">
                     {/* Background circle */}
                     <circle
                       cx="50"
                       cy="50"
-                      r="45"
+                      r={CIRCLE_RADIUS}
                       fill="none"
                       stroke="hsl(var(--border))"
                       strokeWidth="4"
@@ -146,19 +162,19 @@ export default function AnimatedCounters({
                     <circle
                       cx="50"
                       cy="50"
-                      r="45"
+                      r={CIRCLE_RADIUS}
                       fill="none"
                       stroke="hsl(var(--primary))"
                       strokeWidth="4"
                       strokeLinecap="round"
-                      strokeDasharray={circumference}
+                      strokeDasharray={CIRCUMFERENCE}
                       strokeDashoffset={dashOffset}
                       style={{ transition: "stroke-dashoffset 0.1s linear" }}
                     />
                   </svg>
                   {/* Number in center */}
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-lg sm:text-2xl font-bold text-foreground font-mono">
+                    <span className="text-lg sm:text-2xl font-bold text-foreground font-mono" aria-live="polite" aria-atomic="true">
                       {counter.prefix}
                       {values[idx]}
                       {counter.suffix}

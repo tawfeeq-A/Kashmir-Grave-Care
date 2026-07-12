@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 
 interface Scroll3DTiltProps {
@@ -18,7 +18,7 @@ export default function Scroll3DTilt({ children, maxTilt = 8 }: Scroll3DTiltProp
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-  
+
   // Track scroll position of the element relative to the viewport
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -28,28 +28,29 @@ export default function Scroll3DTilt({ children, maxTilt = 8 }: Scroll3DTiltProp
   // Transform scroll progress to 3D rotation angles
   // When entering: tilts backwards. In center: flat. Leaving: tilts forwards.
   const rawRotateX = useTransform(scrollYProgress, [0, 0.5, 1], [maxTilt, 0, -maxTilt]);
-  
-  // Apply a spring for smooth, buttery transition physics
+
+  // FIX: removed invalid `max` property and `as any` cast.
+  // Framer Motion springs do not support a `max` clamp option — the `as any`
+  // was silently masking the type error while the property did nothing.
   const rotateX = useSpring(rawRotateX, {
     stiffness: 75,
     damping: 20,
-    max: 15
-  } as any);
+  });
 
   if (isMobile) {
     return <div className="w-full h-full">{children}</div>;
   }
 
   return (
-    <div 
-      ref={ref} 
-      style={{ perspective: 1200 }} 
+    <div
+      ref={ref}
+      style={{ perspective: 1200 }}
       className="w-full h-full"
     >
       <motion.div
         style={{
           rotateX,
-          transformStyle: "preserve-3d"
+          transformStyle: "preserve-3d",
         }}
         className="w-full h-full origin-center"
       >

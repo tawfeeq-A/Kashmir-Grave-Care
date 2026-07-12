@@ -39,10 +39,8 @@ export default function HorizontalScrollSlider({
   const autoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isPausedRef = useRef(false);
-  const activeIndexRef = useRef(0);
-
-  // Keep ref in sync
-  useEffect(() => { activeIndexRef.current = activeIndex; }, [activeIndex]);
+  // NOTE: we do NOT rely on activeIndexRef for the next-slide computation —
+  // instead we always read scrollLeft directly to avoid iOS stale-ref bugs.
 
   // Detect mobile on mount + resize
   useEffect(() => {
@@ -52,7 +50,7 @@ export default function HorizontalScrollSlider({
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  // ─── DESKTOP: GSAP pinned horizontal scroll (unchanged) ───
+  // ─── DESKTOP: GSAP pinned horizontal scroll ───
   useEffect(() => {
     if (isMobile) return;
     const section = sectionRef.current;
@@ -103,29 +101,40 @@ export default function HorizontalScrollSlider({
     if (!isMobile || !carouselRef.current) return;
     const el = carouselRef.current;
     const handleScroll = () => {
-      const scrollLeft = el.scrollLeft;
       const slideWidth = el.offsetWidth;
-      const idx = Math.round(scrollLeft / slideWidth);
+      if (!slideWidth) return;
+      const idx = Math.round(el.scrollLeft / slideWidth);
       setActiveIndex(idx);
     };
     el.addEventListener("scroll", handleScroll, { passive: true });
     return () => el.removeEventListener("scroll", handleScroll);
   }, [isMobile]);
 
-  // ─── MOBILE: Auto-advance timer with looping ───
+  // ─── MOBILE: Programmatic scroll to a specific slide index ───
+  // FIX: removed 'smooth' CSS class from the element — we rely solely on JS
+  // scrollTo({ behavior: "smooth" }) to avoid the iOS Safari silent-fail bug
+  // where scroll-behavior:smooth on the element suppresses programmatic smooth
+  // scrolls that originate from setInterval (no user gesture in the chain).
   const scrollToSlide = useCallback((idx: number) => {
-    if (!carouselRef.current) return;
-    carouselRef.current.scrollTo({
-      left: idx * carouselRef.current.offsetWidth,
+    const el = carouselRef.current;
+    if (!el) return;
+    el.scrollTo({
+      left: idx * el.offsetWidth,
       behavior: "smooth",
     });
   }, []);
 
+  // ─── MOBILE: Auto-advance timer — reads scrollLeft directly (never stale) ───
   const startAutoAdvance = useCallback(() => {
     if (autoTimerRef.current) clearInterval(autoTimerRef.current);
     autoTimerRef.current = setInterval(() => {
       if (isPausedRef.current) return;
-      const nextIdx = (activeIndexRef.current + 1) % slides.length;
+      const el = carouselRef.current;
+      if (!el) return;
+      // Derive current slide from DOM state — avoids any React state/ref lag
+      const slideWidth = el.offsetWidth;
+      const currentIdx = slideWidth > 0 ? Math.round(el.scrollLeft / slideWidth) : 0;
+      const nextIdx = (currentIdx + 1) % slides.length;
       scrollToSlide(nextIdx);
     }, AUTO_INTERVAL);
   }, [slides.length, scrollToSlide]);
@@ -138,42 +147,44 @@ export default function HorizontalScrollSlider({
     }, TOUCH_PAUSE);
   }, []);
 
-  // Start auto-advance on mobile only when the carousel enters the viewport
+  // Start auto-advance when the carousel enters the viewport
   useEffect(() => {
     if (!isMobile || !sectionRef.current) return;
 
     const section = sectionRef.current;
 
-    // Initially force slide 0 instantly
+    // Initially snap to slide 0 immediately
     if (carouselRef.current) {
       carouselRef.current.scrollTo({ left: 0, behavior: "auto" });
     }
     setActiveIndex(0);
-    activeIndexRef.current = 0;
 
     const observer = new IntersectionObserver(
       (entries) => {
         const [entry] = entries;
         if (entry.isIntersecting) {
-          // Reset to first slide if it was navigated away while offscreen, then start rotation
-          if (carouselRef.current && activeIndexRef.current !== 0) {
-            carouselRef.current.scrollTo({ left: 0, behavior: "auto" });
-            setActiveIndex(0);
-            activeIndexRef.current = 0;
+          // If user scrolled away while offscreen, snap back to slide 0
+          if (carouselRef.current) {
+            const slideWidth = carouselRef.current.offsetWidth;
+            const currentIdx = slideWidth > 0
+              ? Math.round(carouselRef.current.scrollLeft / slideWidth)
+              : 0;
+            if (currentIdx !== 0) {
+              carouselRef.current.scrollTo({ left: 0, behavior: "auto" });
+              setActiveIndex(0);
+            }
           }
           isPausedRef.current = false;
           startAutoAdvance();
         } else {
-          // Pause rotation when scrolled out of view to save mobile resources
+          // Stop rotation when scrolled out of view
           if (autoTimerRef.current) {
             clearInterval(autoTimerRef.current);
             autoTimerRef.current = null;
           }
         }
       },
-      {
-        threshold: 0.15, // Trigger when 15% of the component is visible
-      }
+      { threshold: 0.15 }
     );
 
     observer.observe(section);
@@ -185,7 +196,7 @@ export default function HorizontalScrollSlider({
     };
   }, [isMobile, startAutoAdvance]);
 
-  // Pause on user touch interaction
+  // Pause on user touch/pointer interaction
   useEffect(() => {
     if (!isMobile || !carouselRef.current) return;
     const el = carouselRef.current;
@@ -266,53 +277,67 @@ export default function HorizontalScrollSlider({
           )}
         </div>
 
-        {/* Auto-rotating carousel — no arrows */}
+        {/* Auto-rotating carousel
+            FIX: removed scroll-smooth Tailwind class — scroll-behavior:smooth on the
+            element causes iOS Safari to silently drop programmatic smooth scrolls
+            triggered by setInterval (no user gesture). We use scrollTo({behavior:"smooth"})
+            in JS instead, which works correctly across all tested browsers.
+        */}
         <div className="relative">
           <div
             ref={carouselRef}
-            className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            role="region"
+            aria-label="Eco-ethical values carousel"
+            className="flex overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            style={{ overscrollBehaviorX: "contain", willChange: "scroll-position" }}
           >
-          {slides.map((slide, idx) => (
-            <div
-              key={idx}
-              className="w-full shrink-0 snap-center px-4"
-            >
-              {/* Card layout for mobile carousel */}
-              <div className="bg-secondary/20 rounded-2xl border border-border/50 p-5 space-y-4">
-                {/* Image */}
-                {slide.imageSrc && (
-                  <div className="w-full aspect-[4/3] rounded-xl overflow-hidden border border-border/60 bg-secondary">
-                    <img
-                      src={slide.imageSrc}
-                      alt={slide.title}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
+            {slides.map((slide, idx) => (
+              <div
+                key={idx}
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`Slide ${idx + 1} of ${slides.length}: ${slide.title}`}
+                className="w-full shrink-0 snap-center px-4"
+              >
+                {/* Card layout for mobile carousel */}
+                <div className="bg-secondary/20 rounded-2xl border border-border/50 p-5 space-y-4">
+                  {/* Image */}
+                  {slide.imageSrc && (
+                    <div className="w-full aspect-[4/3] rounded-xl overflow-hidden border border-border/60 bg-secondary">
+                      <img
+                        src={slide.imageSrc}
+                        alt={slide.title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
+                  {/* Text */}
+                  <div className="flex items-baseline gap-3">
+                    <span className="font-serif text-2xl font-bold text-primary/30 select-none">
+                      {slide.num}
+                    </span>
+                    <h3 className="text-base font-bold text-foreground font-serif">
+                      {slide.title}
+                    </h3>
                   </div>
-                )}
-                {/* Text */}
-                <div className="flex items-baseline gap-3">
-                  <span className="font-serif text-2xl font-bold text-primary/30 select-none">
-                    {slide.num}
-                  </span>
-                  <h3 className="text-base font-bold text-foreground font-serif">
-                    {slide.title}
-                  </h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {slide.desc}
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {slide.desc}
-                </p>
               </div>
-            </div>
-          ))}
+            ))}
           </div>
         </div>
 
-        {/* Dot indicators — tapping pauses auto-advance and jumps */}
-        <div className="flex items-center justify-center gap-2 mt-5">
+        {/* Dot indicators — tapping pauses auto-advance and jumps to slide */}
+        <div className="flex items-center justify-center gap-2 mt-5" role="tablist" aria-label="Slide navigation">
           {slides.map((_, idx) => (
             <button
               key={idx}
+              role="tab"
+              aria-selected={idx === activeIndex}
+              aria-current={idx === activeIndex ? "true" : undefined}
               onClick={() => {
                 scrollToSlide(idx);
                 pauseAutoAdvance();
@@ -331,7 +356,7 @@ export default function HorizontalScrollSlider({
   }
 
   // ═══════════════════════════════════════════════════
-  // DESKTOP/TABLET: GSAP pinned horizontal scroll (unchanged from working version)
+  // DESKTOP/TABLET: GSAP pinned horizontal scroll
   // ═══════════════════════════════════════════════════
   return (
     <section

@@ -94,12 +94,12 @@ export default function App({ Component, pageProps }: AppProps) {
 
   // Prompt user to update when new SW is waiting
   const handleUpdate = useCallback(() => {
-    const reg = navigator.serviceWorker?.controller;
-    if (reg) {
-      navigator.serviceWorker.ready.then((registration) => {
-        registration.waiting?.postMessage({ type: "SKIP_WAITING" });
-      });
-    }
+    // FIX: do not gate on navigator.serviceWorker.controller — it may be null
+    // when the new worker is "waiting" but hasn't yet taken control. Post
+    // SKIP_WAITING directly to the waiting worker via ready.
+    navigator.serviceWorker?.ready.then((registration) => {
+      registration.waiting?.postMessage({ type: "SKIP_WAITING" });
+    });
     setSwUpdateAvailable(false);
   }, []);
 
@@ -108,6 +108,9 @@ export default function App({ Component, pageProps }: AppProps) {
       <Head>
         <title>Grave Care Kashmir | Preserving Peace &amp; Memories</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, interactive-widget=resizes-content" />
+        {/* PWA theme-color — must match manifest.json theme_color */}
+        <meta name="theme-color" content="#1E5C45" />
+        <meta name="theme-color" content="#0e3a2b" media="(prefers-color-scheme: dark)" />
       </Head>
       <SmoothScroll>
         <ProgressBar />
@@ -130,7 +133,15 @@ export default function App({ Component, pageProps }: AppProps) {
               Skip to main content
             </a>
             <Navbar />
-            <main id="main-content" className="flex-grow">
+            <main
+              id="main-content"
+              className="flex-grow"
+              // FIX: tabIndex={-1} is required so that the skip-link
+              // (<a href="#main-content">) actually moves keyboard focus here
+              // when activated. Without it, Firefox and some screen-readers
+              // do not move focus to the element — only scroll position changes.
+              tabIndex={-1}
+            >
               {/* Opacity-only page transition (no transform — keeps GSAP pin
                   and position:fixed working). Refreshes ScrollTrigger after. */}
               <AnimatePresence mode="wait" initial={false}>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
@@ -19,6 +19,14 @@ import {
 export default function Home() {
   const { settings } = useSite();
   const content = settings?.content_json || {};
+
+  // FIX: memoize the WhatsApp URL — it was built inline in JSX 3× per render
+  // (string replacement + encodeURIComponent on every reconcile).
+  const whatsappUrl = useMemo(() => {
+    const number = (settings?.whatsapp_number || "917006830501").replace(/[^0-9]/g, "");
+    const message = encodeURIComponent(settings?.whatsapp_message || "");
+    return `https://wa.me/${number}?text=${message}`;
+  }, [settings?.whatsapp_number, settings?.whatsapp_message]);
 
   const services = [
     {
@@ -112,7 +120,7 @@ export default function Home() {
           actions={
             <>
               <a
-                href={`https://wa.me/${(settings?.whatsapp_number || "917006830501").replace(/[^0-9]/g, '')}?text=${encodeURIComponent(settings?.whatsapp_message || "")}`}
+                href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-base btn-primary btn-sheen w-full sm:w-auto px-7 py-3.5 text-sm"
@@ -150,7 +158,7 @@ export default function Home() {
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 50vw"
-                    loading="lazy"
+                    priority
                   />
                   {/* Gradient overlay for depth */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
@@ -181,7 +189,7 @@ export default function Home() {
                 </p>
                 <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-3 sm:gap-4 pt-2">
                   <a
-                    href={`https://wa.me/${(settings?.whatsapp_number || "917006830501").replace(/[^0-9]/g, '')}?text=${encodeURIComponent(settings?.whatsapp_message || "")}`}
+                    href={whatsappUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn-base btn-primary btn-sheen px-7 py-3.5 text-sm"
@@ -369,7 +377,7 @@ export default function Home() {
             </p>
             <div className="pt-4 flex flex-col sm:flex-row justify-center items-center gap-4">
               <a
-                href={`https://wa.me/${(settings?.whatsapp_number || "917006830501").replace(/[^0-9]/g, '')}?text=${encodeURIComponent(settings?.whatsapp_message || "")}`}
+                href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-base btn-sheen w-full sm:w-auto px-8 py-4 text-base text-primary bg-white shadow-lg shadow-black/10 hover:bg-zinc-50 hover:-translate-y-0.5 hover:shadow-xl"
